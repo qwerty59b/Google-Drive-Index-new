@@ -265,6 +265,10 @@
 * Beta Version is redesigned using Bootstrap from Alpha Version by [Parveen Bhadoo](https://twitter.com/ParveenBhadoo).
 * This Repo was imported from [yanzai](https://github.com/yanzai/goindex) and then modified for personal use.
 
+## Sponsors
+
+<a href="https://www.browserstack.com"><img src="https://i.imgur.com/UMYceGo.png" alt="drawing" width="300" /></a>
+
 ## Support this Project
 
 [![Support](https://cdn.buymeacoffee.com/buttons/v2/default-white.png)](https://www.buymeacoffee.com/bhadoo)
