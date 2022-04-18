@@ -265,6 +265,11 @@
 * Beta Version is redesigned using Bootstrap from Alpha Version by [Parveen Bhadoo](https://twitter.com/ParveenBhadoo).
 * This Repo was imported from [yanzai](https://github.com/yanzai/goindex) and then modified for personal use.
 
+## Legal Disclaimer
+
+* Hash Hacker's or Bhadoo Cloud or Parveen Bhadoo doesn't own the websites created using this software. The Software is under MIT License and Free to use for everyone personally or commercially. If any site is found using the name in title as the project or related names, shouldn't be assumed to be associated with us. The Software provides full configuration to the user to update and change the names of title, contact information for the published website using this software.
+* As an open-source Software, it can be used by good and bad actors both, eg. the use of [YT-DL](https://youtube-dl.org), read full post [here](https://github.blog/2020-11-16-standing-up-for-developers-youtube-dl-is-back/).
+
 ## Sponsors
 
 <a href="https://www.browserstack.com"><img src="https://i.imgur.com/UMYceGo.png" alt="drawing" width="300" /></a>
