@@ -280,6 +280,10 @@
 
 * Contribute to this project or improve this README.
 
+## License
+
+* [MIT License](https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index/-/blob/master/LICENSE)
+
 ### Donate by Crpto
 
 * ETH `0xaf25cdc7967213172a745453a64e8a0b59686729`
