@@ -214,24 +214,11 @@
 
 ## Get Google_Client_ID and Secret and Generate Token
 
-* Open [Google Dev Credentials Site](https://console.developers.google.com/apis/credentials).
-* Create a Project, name as you like.
-* Enable [Drive API](https://console.developers.google.com/apis/library/drive.googleapis.com)
-* In [Credentials Page](https://console.developers.google.com/apis/credentials) Click `Create Credentials` and then Click `OAuth Client ID`.
-* Click Configure Consent Screen.
-* Select External.
-* Fill your APP Details
-* Select Scope as `https://www.googleapis.com/auth/drive` (wait few hours if Google Drive is not showing up if you've just enabled the scope) or
-* You can also enter manual scope `https://www.googleapis.com/auth/drive` and click on add to table and then save or update.
-* Proceed with Save and Continue.
-* Add your email id you want to use as test user, up to 100 emails maximum. (Because you are not verified)
-* In [Credentials Page](https://console.developers.google.com/apis/credentials) Click `Create Credentials` and then Click `OAuth Client ID`.
-* Select Desktop App.
-* Now you have your own CLIENT ID and CLIENT SECRET.
-* Copy your details and save for future use.
-* Copy worker-generator.js code.
-* Replace Line 20 and 21 with your own CLIENT ID and CLIENT SECRET.
-* Paste this code in Cloud flare Workers and follow the site.
+* Google is depreciating OOB, read blog post [here](https://developers.googleblog.com/2022/02/making-oauth-flows-safer.html).
+* Old authorizations users did on our App will keep working.
+* New Users will see new Client ID and Secret on our APP.
+* Instead of updating generate new code.
+* Currently we do not have a guide for custom workflow. But we'll update it in time.
 
 ## Upcoming Changes
 

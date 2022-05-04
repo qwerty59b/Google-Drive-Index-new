@@ -3,10 +3,10 @@ addEventListener('fetch', event => {
 });
 
 const tokenURL = 'https://www.googleapis.com/oauth2/v4/token';
-const clientId = '746239575955-oao9hkv614p8glrqpvuh5i8mqfoq145b.apps.googleusercontent.com';
-const clientSecret = 'u5a1CSY5pNjdD2tGTU93TTnI';
+const clientId = '';
+const clientSecret = '';
 const grantType = 'authorization_code';
-const redirectURI = 'urn:ietf:wg:oauth:2.0:oob';
+const redirectURI = 'https://example.com';
 const jsURL = 'https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index/-/raw/master/worker/worker-super.js';
 
 async function handleRequest(request) {
@@ -283,13 +283,13 @@ async function handleRequest(request) {
 </head>
 <body">
 <div class="container">
-    <br><br>
-    <a href="https://www.npmjs.com/package/@googledrive/index"><h3>Bhadoo Index Generator - Beta</h3></a>
+    <br>
+    <a href="/"><img border="0" alt="Bhadoo Cloud" src="https://cdn.jsdelivr.net/npm/@googledrive/index@2.0.20/images/bhadoo-cloud-logo-white.svg" height="" width="150px"></a>
+    <a href="https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index"><h5>Bhadoo Index Generator - Beta</h5></a>
     <br>
         <div>
             <h3>1. <a
-               href="https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${redirectURI}&response_type=code&access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive&approval_prompt=auto"
-               target="_blank"><img src="https://developers.google.com/identity/images/btn_google_signin_dark_normal_web.png"></a></h3>
+               href="https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${redirectURI}&response_type=code&access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive&prompt=select_account+consent"><img src="https://developers.google.com/identity/images/btn_google_signin_dark_normal_web.png"></a></h3>
         </div>
         <p>The App requests permissions to access your Google Drive files so do not share this code with anyone else.</p>
     <br>
@@ -382,6 +382,10 @@ async function handleRequest(request) {
 
         return actionMsg;
     }
+var url_string = window.location.href;
+var url = new URL(url_string);
+var getauthcode = url.searchParams.get("code");
+document.getElementById("authcode").value = getauthcode;
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8" crossorigin="anonymous"></script>
