@@ -907,7 +907,7 @@ class googleDrive {
         let res;
          for (let i = 0; i < 3; i++) {
              res = await fetch(url, requestOption);
-             if (res.status === 200) {
+             if (res.ok) {
                  break;
              }
              await this.sleep(800 * (i + 1));
@@ -975,7 +975,7 @@ class googleDrive {
         let response;
         for (let i = 0; i < 3; i++) {
             response = await fetch(url, requestOption);
-            if (response.status === 200) {
+            if (response.ok) {
                 break;
             }
             await this.sleep(800 * (i + 1));
@@ -1044,7 +1044,7 @@ class googleDrive {
         let response;
         for (let i = 0; i < 3; i++) {
             response = await fetch(url, requestOption);
-            if (response.status === 200) {
+            if (response.ok) {
                 break;
             }
             await this.sleep(800 * (i + 1));
@@ -1133,7 +1133,7 @@ class googleDrive {
         let response;
         for (let i = 0; i < 3; i++) {
             response = await fetch(url, requestOption);
-            if (response.status === 200) {
+            if (response.ok) {
                 break;
             }
             await this.sleep(800 * (i + 1));
@@ -1259,7 +1259,7 @@ class googleDrive {
         let response;
         for (let i = 0; i < 3; i++) {
             response = await fetch(url, requestOption);
-            if (response.status === 200) {
+            if (response.ok) {
                 break;
             }
             await this.sleep(800 * (i + 1));
@@ -1314,7 +1314,7 @@ class googleDrive {
         let response;
         for (let i = 0; i < 3; i++) {
             response = await fetch(url, requestOption);
-            if (response.status === 200) {
+            if (response.ok) {
                 break;
             }
             await this.sleep(800 * (i + 1));
@@ -1326,7 +1326,7 @@ class googleDrive {
         let response;
         for (let i = 0; i < 3; i++) {
             response = await fetch(url, requestOption);
-            if (response.status === 200) {
+            if (response.ok) {
                 break;
             }
             await this.sleep(800 * (i + 1));
