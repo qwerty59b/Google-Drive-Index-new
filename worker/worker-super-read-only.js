@@ -4,8 +4,8 @@
     ██║░░╚██╗██║░░██║██║░░░██╗░░██║░╚═══██╗░░░██║░░██║██╔══██╗██║░░╚██╗
     ╚██████╔╝██████╔╝██║██╗╚█████╔╝██████╔╝██╗╚█████╔╝██║░░██║╚██████╔╝
     ░╚═════╝░╚═════╝░╚═╝╚═╝░╚════╝░╚═════╝░╚═╝░╚════╝░╚═╝░░╚═╝░╚═════╝░
-                             v 2.1.8
-A Script Redesigned by Parveen Bhadoo from GOIndex at https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index */
+                             v 2.2.0
+A Script Redesigned by Parveen Bhadoo from GOIndex at https://gitlab.com/GoogleDriveIndex/Google-Drive-Index */
 
 // WARNING WARNING WARNING
 // This Script doesn't support Folder ID, use root or Shared Drive ID only
@@ -74,15 +74,15 @@ const authConfig = {
 ░░░╚═╝░░░╚═╝░░╚═╝╚══════╝░╚═════╝░╚══════╝╚═════╝░*/
 
 const uiConfig = {
-    "theme": "slate", // switch between themes, default set to slate, select from https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index
-    "version": "2.1.8", // don't touch this one. get latest code using generator at https://bdi-generator.hashhackers.com
+    "theme": "slate", // switch between themes, default set to slate, select from https://gitlab.com/GoogleDriveIndex/Google-Drive-Index
+    "version": "2.2.0", // don't touch this one. get latest code using generator at https://bdi-generator.hashhackers.com
     // If you're using Image then set to true, If you want text then set it to false
     "logo_image": true, // true if you're using image link in next option.
     "logo_height": "", // only if logo_image is true
     "logo_width": "100px", // only if logo_image is true
-    "favicon": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.1.8/images/favicon.ico",
+    "favicon": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.0/images/favicon.ico",
     // if logo is true then link otherwise just text for name
-    "logo_link_name": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.1.8/images/bhadoo-cloud-logo-white.svg",
+    "logo_link_name": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.0/images/bhadoo-cloud-logo-white.svg",
     "fixed_header": true, // If you want the footer to be flexible or fixed.
     "header_padding": "80", // Value 80 for fixed header, Value 20 for flexible header. Required to be changed accordingly in some themes.
     "nav_link_1": "Home", // change navigation link name
@@ -115,8 +115,8 @@ const uiConfig = {
     "second_domain_for_dl": true, // If you want to display other URL for Downloading to protect your main domain.
     "downloaddomain": domain_for_dl, // Ignore this and set domains at top of this page after service accounts.
     "videodomain": video_domain_for_dl, // Ignore this and set domains at top of this page after service accounts.
-    "poster": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.1.8/images/poster.jpg", // Video poster URL or see Readme to how to load from Drive
-    "audioposter": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.1.8/images/music.jpg", // Video poster URL or see Readme to how to load from Drive
+    "poster": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.0/images/poster.jpg", // Video poster URL or see Readme to how to load from Drive
+    "audioposter": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.0/images/music.jpg", // Video poster URL or see Readme to how to load from Drive
     "jsdelivr_cdn_src": "https://cdn.jsdelivr.net/npm/@googledrive/index", // If Project is Forked, then enter your GitHub repo
     "render_head_md": true, // Render Head.md
     "render_readme_md": true, // Render Readme.md
@@ -125,7 +125,6 @@ const uiConfig = {
     "plyr_io_video_resolution": "16:9", // For reference, visit: https://github.com/sampotts/plyr#options
     "unauthorized_owner_link": "https://telegram.dog/Telegram", // Unauthorized Error Page Link to Owner
     "unauthorized_owner_email": "abuse@telegram.org", // Unauthorized Error Page Owner Email
-    "arc_code": "jfoY2h19", // arc.io Integration Code, get yours from https://portal.arc.io
     "search_all_drives": false // gives gdrive links on search and searches all drives on that account, doesn't require adding
 };
 
@@ -155,7 +154,6 @@ function html(current_drive_order = 0, model = {}) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no"/>
   <title>${authConfig.siteName}</title>
-  <script async src="https://arc.io/widget.min.js#${uiConfig.arc_code}"></script>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="${uiConfig.favicon}">
   <script>
@@ -851,7 +849,7 @@ async function handleRequest(request, event) {
     var loginCheck = await loginHandleRequest(event)
     if(authConfig['enable_auth0_com'] && loginCheck != null){return loginCheck}
     const region = request.headers.get('cf-ipcountry').toUpperCase();
-    const asn_servers = request.cf.asn;
+    try {var asn_servers = request.cf.asn;}catch {var asn_servers = 0;}
     const referer = request.headers.get("Referer");
     if (gds.length === 0) {
         for (let i = 0; i < authConfig.roots.length; i++) {
@@ -882,19 +880,7 @@ async function handleRequest(request, event) {
         });
     }
 
-    if (path == '/') {
-        return new Response(homepage, {
-            status: 200,
-            headers: {
-                "content-type": "text/html;charset=UTF-8",
-            },
-        })
-    }
-    if (path.toLowerCase() == '/arc-sw.js') {
-        return fetch("https://arc.io/arc-sw.js")
-    } else if (path.toLowerCase() == '/admin') {
-        return Response.redirect("https://www.npmjs.com/package/@googledrive/index", 301)
-    } else if (blocked_region.includes(region)) {
+    if (blocked_region.includes(region)) {
         return new Response(asn_blocked, {
             status: 403,
             headers: {
@@ -908,6 +894,13 @@ async function handleRequest(request, event) {
                 },
                 status: 401
             });
+    } else if (path == '/') {
+        return new Response(homepage, {
+            status: 200,
+            headers: {
+                "content-type": "text/html;charset=UTF-8",
+            },
+        })
     }
 
     if (authConfig['direct_link_protection']) {

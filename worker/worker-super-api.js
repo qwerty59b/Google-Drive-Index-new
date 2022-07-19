@@ -4,8 +4,8 @@
     ██║░░╚██╗██║░░██║██║░░░██╗░░██║░╚═══██╗░░░██║░░██║██╔══██╗██║░░╚██╗
     ╚██████╔╝██████╔╝██║██╗╚█████╔╝██████╔╝██╗╚█████╔╝██║░░██║╚██████╔╝
     ░╚═════╝░╚═════╝░╚═╝╚═╝░╚════╝░╚═════╝░╚═╝░╚════╝░╚═╝░░╚═╝░╚═════╝░
-                             v 2.1.8
-A Script Redesigned by Parveen Bhadoo from GOIndex at https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index */
+                             v 2.2.0
+A Script Redesigned by Parveen Bhadoo from GOIndex at https://gitlab.com/GoogleDriveIndex/Google-Drive-Index */
 
 // add multiple serviceaccounts as {}, {}, {}, random account will be selected by each time app is opened.
 const serviceaccounts = [
@@ -69,8 +69,8 @@ const authConfig = {
 ░░░╚═╝░░░╚═╝░░╚═╝╚══════╝░╚═════╝░╚══════╝╚═════╝░*/
 
 const uiConfig = {
-    "theme": "slate", // switch between themes, default set to slate, select from https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index
-    "version": "2.1.8", // don't touch this one. get latest code using generator at https://bdi-generator.hashhackers.com
+    "theme": "slate", // switch between themes, default set to slate, select from https://gitlab.com/GoogleDriveIndex/Google-Drive-Index
+    "version": "2.2.0", // don't touch this one. get latest code using generator at https://bdi-generator.hashhackers.com
     "api_url": "https://REPLACE_WITH_API_SITE_WHERE_YOU_ARE_DEPLOYING_THIS_CODE",
     // If you're using Image then set to true, If you want text then set it to false
     "logo_image": true, // true if you're using image link in next option.
@@ -121,7 +121,6 @@ const uiConfig = {
     "plyr_io_video_resolution": "16:9", // For reference, visit: https://github.com/sampotts/plyr#options
     "unauthorized_owner_link": "https://telegram.dog/Telegram", // Unauthorized Error Page Link to Owner
     "unauthorized_owner_email": "abuse@telegram.org", // Unauthorized Error Page Owner Email
-    "arc_code": "jfoY2h19", // arc.io Integration Code, get yours from https://portal.arc.io
     "modified_function_no_use": false // don't touch this one
 };
 
@@ -503,7 +502,7 @@ async function handleRequest(request, event) {
     const region = request.headers.get('cf-ipcountry').toUpperCase();
     const asn_servers = '';
     try {
-    const asn_servers = request.cf.asn;
+    try {var asn_servers = request.cf.asn;}catch {var asn_servers = 0;}
     }
     catch {
     const asn_servers = 111;
@@ -539,16 +538,28 @@ async function handleRequest(request, event) {
         });
     }
 
-    if (path == '/') {
+    if (blocked_region.includes(region)) {
+        return new Response(asn_blocked, {
+            status: 403,
+            headers: {
+                "content-type": "text/html;charset=UTF-8",
+            },
+        })
+    } else if (blocked_asn.includes(asn_servers)) {
+        return new Response(asn_blocked, {
+                headers: {
+                    'content-type': 'text/html;charset=UTF-8'
+                },
+                status: 401
+            });
+    } else if (path == '/') {
         return new Response(homepage, {
             status: 200,
             headers: {
                 "content-type": "text/html;charset=UTF-8",
-                "Access-Control-Allow-Origin": authConfig.cors_domain,
             },
         })
-    }
-    if (path.toLowerCase() == '/config.js') {
+    } else if (path.toLowerCase() == '/config.js') {
         return new Response(configjs, {
             status: 200,
             headers: {
@@ -556,26 +567,6 @@ async function handleRequest(request, event) {
                 "Access-Control-Allow-Origin": authConfig.cors_domain,
             },
         })
-    } else if (path.toLowerCase() == '/arc-sw.js') {
-        return fetch("https://arc.io/arc-sw.js")
-    } else if (path.toLowerCase() == '/admin') {
-        return Response.redirect("https://www.npmjs.com/package/@googledrive/index", 301)
-    } else if (blocked_region.includes(region)) {
-        return new Response(asn_blocked, {
-            status: 403,
-            headers: {
-                "content-type": "text/html;charset=UTF-8",
-                "Access-Control-Allow-Origin": authConfig.cors_domain,
-            },
-        })
-    } else if (blocked_asn.includes(asn_servers)) {
-        return new Response(asn_blocked, {
-                headers: {
-                    'content-type': 'text/html;charset=UTF-8',
-                    "Access-Control-Allow-Origin": authConfig.cors_domain,
-                },
-                status: 401
-            });
     }
 
     if (authConfig['direct_link_protection']) {

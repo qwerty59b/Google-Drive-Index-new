@@ -5,7 +5,7 @@
 [![Month](https://data.jsdelivr.com/v1/package/npm/@googledrive/index/badge/month)](https://www.jsdelivr.com/package/npm/@googledrive/index)
 [![Week](https://data.jsdelivr.com/v1/package/npm/@googledrive/index/badge/week)](https://www.jsdelivr.com/package/npm/@googledrive/index)
 [![Day](https://data.jsdelivr.com/v1/package/npm/@googledrive/index/badge/day)](https://www.jsdelivr.com/package/npm/@googledrive/index)
-[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://www.npmjs.com/package/@googledrive/index)
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://gitlab.com/GoogleDriveIndex/Google-Drive-Index&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://www.npmjs.com/package/@googledrive/index)
 
 ## Full White label and Customizable Index | One of a kind
 
@@ -14,16 +14,16 @@
 
 ## Read Wiki of Index before asking How to Do What...
 
-* [Getting-Started-with-Google-Drive-Index](https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index/-/wikis/Getting-Started-with-Google-Drive-Index)
+* [Getting-Started-with-Google-Drive-Index](https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/wikis/Getting-Started-with-Google-Drive-Index)
 
-[![Screenshot](https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index/-/raw/master/images/themes/vapor.png)](https://youtu.be/Ihk4Gm3DPvg)
+[![Screenshot](https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/raw/master/images/themes/vapor.png)](https://youtu.be/Ihk4Gm3DPvg)
 
-[![Screenshot](https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index/-/raw/master/images/themes/darkly.png)](https://youtu.be/Ihk4Gm3DPvg)
+[![Screenshot](https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/raw/master/images/themes/darkly.png)](https://youtu.be/Ihk4Gm3DPvg)
 
 
 ## How to
 
-* Stable Release `2.1.8`
+* Stable Release `2.2.0`
 * Latest Index is faster than before, but backup before making new, and report if I missed something in issues. :)
 * Beta Version (Latest) - [bdi-generator](https://bdi-generator.hashhackers.com) (For Dark Theme use darkly)
 * If you want to deploy main drive leave the option ROOT as it is.
@@ -174,13 +174,6 @@
 * change only refresh_token or SA and Drive IDs, don't touch anything else.
 * It's done.
 
-## arc.io Integration
-
-* arc.io is embedded in code to support gdi.js.org
-* if you have approved arc.io account, use your code.
-* incase you don't have arc account and want to support us, please keep our arc.io code in your index.
-* if anyone doesn't want to support us and want to remove arc, remove the arc code from the workers code.
-
 ## Themes
 
 * There are 25 Themes from [bootswatch](https://github.com/thomaspark/bootswatch) official [Bootstrap](https://getbootstrap.com) Themes.
@@ -269,7 +262,7 @@
 
 ## License
 
-* [MIT License](https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index/-/blob/master/LICENSE)
+* [MIT License](https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/blob/master/LICENSE)
 
 ### Donate by Crpto
 

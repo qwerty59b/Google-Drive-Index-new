@@ -4,8 +4,8 @@
     ██║░░╚██╗██║░░██║██║░░░██╗░░██║░╚═══██╗░░░██║░░██║██╔══██╗██║░░╚██╗
     ╚██████╔╝██████╔╝██║██╗╚█████╔╝██████╔╝██╗╚█████╔╝██║░░██║╚██████╔╝
     ░╚═════╝░╚═════╝░╚═╝╚═╝░╚════╝░╚═════╝░╚═╝░╚════╝░╚═╝░░╚═╝░╚═════╝░
-                             v 2.1.8
-A Script Redesigned by Parveen Bhadoo from GOIndex at https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index */
+                             v 2.2.0
+A Script Redesigned by Parveen Bhadoo from GOIndex at https://gitlab.com/GoogleDriveIndex/Google-Drive-Index */
 
 // WARNING WARNING WARNING
 // This Script doesn't support Folder ID, use root or Shared Drive ID only
@@ -77,8 +77,8 @@ const authConfig = {
 ░░░╚═╝░░░╚═╝░░╚═╝╚══════╝░╚═════╝░╚══════╝╚═════╝░*/
 
 const uiConfig = {
-    "theme": "slate", // switch between themes, default set to slate, select from https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index
-    "version": "2.1.8", // don't touch this one. get latest code using generator at https://bdi-generator.hashhackers.com
+    "theme": "slate", // switch between themes, default set to slate, select from https://gitlab.com/GoogleDriveIndex/Google-Drive-Index
+    "version": "2.2.0", // don't touch this one. get latest code using generator at https://bdi-generator.hashhackers.com
     // If you're using Image then set to true, If you want text then set it to false
     "logo_image": true, // true if you're using image link in next option.
     "logo_height": "", // only if logo_image is true
@@ -128,7 +128,6 @@ const uiConfig = {
     "plyr_io_video_resolution": "16:9", // For reference, visit: https://github.com/sampotts/plyr#options
     "unauthorized_owner_link": "https://telegram.dog/Telegram", // Unauthorized Error Page Link to Owner
     "unauthorized_owner_email": "abuse@telegram.org", // Unauthorized Error Page Owner Email
-    "arc_code": "jfoY2h19", // arc.io Integration Code, get yours from https://portal.arc.io
 };
 
 
@@ -157,7 +156,6 @@ function html(current_drive_order = 0, model = {}) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no"/>
   <title>${authConfig.siteName}</title>
-  <script async src="https://arc.io/widget.min.js#${uiConfig.arc_code}"></script>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="${uiConfig.favicon}">
   <script>
@@ -854,7 +852,7 @@ async function handleRequest(request, event) {
     var loginCheck = await loginHandleRequest(event)
     if(authConfig['enable_auth0_com'] && loginCheck != null){return loginCheck}
     const region = request.headers.get('cf-ipcountry').toUpperCase();
-    const asn_servers = request.cf.asn;
+    try {var asn_servers = request.cf.asn;}catch {var asn_servers = 0;}
     const referer = request.headers.get("Referer");
     if (gds.length === 0) {
         for (let i = 0; i < authConfig.roots.length; i++) {
@@ -885,19 +883,7 @@ async function handleRequest(request, event) {
         });
     }
 
-    if (path == '/') {
-        return new Response(homepage, {
-            status: 200,
-            headers: {
-                "content-type": "text/html;charset=UTF-8",
-            },
-        })
-    }
-    if (path.toLowerCase() == '/arc-sw.js') {
-        return fetch("https://arc.io/arc-sw.js")
-    } else if (path.toLowerCase() == '/admin') {
-        return Response.redirect("https://www.npmjs.com/package/@googledrive/index", 301)
-    } else if (blocked_region.includes(region)) {
+    if (blocked_region.includes(region)) {
         return new Response(asn_blocked, {
             status: 403,
             headers: {
@@ -911,6 +897,13 @@ async function handleRequest(request, event) {
                 },
                 status: 401
             });
+    } else if (path == '/') {
+        return new Response(homepage, {
+            status: 200,
+            headers: {
+                "content-type": "text/html;charset=UTF-8",
+            },
+        })
     }
 
     if (authConfig['direct_link_protection']) {

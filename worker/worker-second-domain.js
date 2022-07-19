@@ -4,8 +4,8 @@
     ██║░░╚██╗██║░░██║██║░░░██╗░░██║░╚═══██╗░░░██║░░██║██╔══██╗██║░░╚██╗
     ╚██████╔╝██████╔╝██║██╗╚█████╔╝██████╔╝██╗╚█████╔╝██║░░██║╚██████╔╝
     ░╚═════╝░╚═════╝░╚═╝╚═╝░╚════╝░╚═════╝░╚═╝░╚════╝░╚═╝░░╚═╝░╚═════╝░
-                             v 2.1.8
-A Script Redesigned by Parveen Bhadoo from GOIndex at https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index */
+                             v 2.2.0
+A Script Redesigned by Parveen Bhadoo from GOIndex at https://gitlab.com/GoogleDriveIndex/Google-Drive-Index */
 
 // add multiple serviceaccounts as {}, {}, {}, random account will be selected by each time app is opened.
 const serviceaccounts = [
@@ -61,7 +61,7 @@ const authConfig = {
 ░░░╚═╝░░░╚═╝░░╚═╝╚══════╝░╚═════╝░╚══════╝╚═════╝░*/
 
 const uiConfig = {
-    "version": "2.1.8", // don't touch this one. get latest code using generator at https://bdi-generator.hashhackers.com
+    "version": "2.2.0", // don't touch this one. get latest code using generator at https://bdi-generator.hashhackers.com
     "jsdelivr_cdn_src": "https://cdn.jsdelivr.net/npm/@googledrive/index", // If Project is Forked, then enter your GitHub repo
 };
 
@@ -198,6 +198,7 @@ async function handleRequest(request, event) {
     let path = url.pathname;
     let hostname = url.hostname;
     let find_dot = path.substr(path.length - 4, 1);
+    let find_a_dot = path.substr(path.length - 5, 1);
 
     function redirectToIndexPage() {
         return new Response('', {
@@ -224,12 +225,36 @@ async function handleRequest(request, event) {
             },
         })
     } else if (find_dot != '.'){
-        return new Response('{"message":"Content Not Found"}', {
-            status: 403,
-            headers: {
-                "content-type": "application/json;",
-            },
-        })
+        if (find_a_dot != '.') {
+            return new Response('{"message":"Content Not Found"}', {
+                status: 403,
+                headers: {
+                    "content-type": "application/json;",
+                },
+            })
+        }
+    }
+
+    if (authConfig['direct_link_protection']) {
+      if (referer == null){
+          return new Response(directlink, {
+                  headers: {
+                      'content-type': 'text/html;charset=UTF-8'
+                  },
+                  status: 401
+              });
+          //console.log("Refer Null");
+      } else if (referer.includes(hostname)) {
+          //console.log("Refer Detected");
+      } else {
+          return new Response(directlink, {
+                  headers: {
+                      'content-type': 'text/html;charset=UTF-8'
+                  },
+                  status: 401
+              });
+          //console.log("Wrong Refer URL");
+      }
     }
 
     const command_reg = /^\/(?<num>\d+):(?<command>[a-zA-Z0-9]+)(\/.*)?$/g;

@@ -1,6 +1,6 @@
 {
   "name": "@googledrive/index",
-  "version": "2.1.8",
+  "version": "2.2.0",
   "description": "A Google Drive Index to List, Watch and Download Files using a Beautiful UI.",
   "main": "README.md",
   "keywords": [
@@ -10,10 +10,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index.git"
+    "url": "git+https://gitlab.com/GoogleDriveIndex/Google-Drive-Index.git"
   },
   "bugs": {
-    "url": "https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index/issues"
+    "url": "https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/issues"
   },
-  "homepage": "https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index/-/blob/master/README.md"
+  "homepage": "https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/blob/master/README.md"
 }
