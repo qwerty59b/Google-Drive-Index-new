@@ -4,7 +4,7 @@
     ██║░░╚██╗██║░░██║██║░░░██╗░░██║░╚═══██╗░░░██║░░██║██╔══██╗██║░░╚██╗
     ╚██████╔╝██████╔╝██║██╗╚█████╔╝██████╔╝██╗╚█████╔╝██║░░██║╚██████╔╝
     ░╚═════╝░╚═════╝░╚═╝╚═╝░╚════╝░╚═════╝░╚═╝░╚════╝░╚═╝░░╚═╝░╚═════╝░
-                             v 2.2.0
+                             v 2.2.1
 A Script Redesigned by Parveen Bhadoo from GOIndex at https://gitlab.com/GoogleDriveIndex/Google-Drive-Index */
 
 // NOTE: THIS REDIRECT VIDEO LINKS TO MAIN INDEX, USE THIS TO DIVIDE VIDEO FILES TRAFFIC FROM NORMAL FILES TRAFFIC.
@@ -64,7 +64,7 @@ const authConfig = {
 ░░░╚═╝░░░╚═╝░░╚═╝╚══════╝░╚═════╝░╚══════╝╚═════╝░*/
 
 const uiConfig = {
-    "version": "2.2.0", // don't touch this one. get latest code using generator at https://bdi-generator.hashhackers.com
+    "version": "2.2.1", // don't touch this one. get latest code using generator at https://bdi-generator.hashhackers.com
     "jsdelivr_cdn_src": "https://cdn.jsdelivr.net/npm/@googledrive/index", // If Project is Forked, then enter your GitHub repo
 };
 
