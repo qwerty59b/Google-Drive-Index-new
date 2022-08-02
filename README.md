@@ -253,9 +253,11 @@
 
 ## Sponsors
 
-<a href="https://www.browserstack.com"><img src="https://i.imgur.com/UMYceGo.png" alt="drawing" width="300" /></a>
+<a href="https://www.browserstack.com"><img src="https://i.imgur.com/UMYceGo.png" alt="BrowserStack" width="300" /></a>
 
-<a href="https://tutanota.com"><img src="https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/raw/master/images/tutanota-logo-red-black-font.webp" alt="drawing" width="300" /></a>
+<a href="https://tutanota.com"><img src="https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/raw/master/images/tutanota-logo-red-black-font.webp" alt="Tutanato" width="300" /></a>
+
+<a href="https://1password.com"><img src="https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/raw/master/images/1password.png" alt="1Password" width="300" /></a>
 
 ## Support this Project
 
