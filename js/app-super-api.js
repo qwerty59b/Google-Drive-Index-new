@@ -1,5 +1,5 @@
 // Redesigned by telegram.dog/TheFirstSpeedster at https://www.npmjs.com/package/@googledrive/index which was written by someone else, credits are given on Source Page.
-// v2.2.1
+// v2.2.2
 // Initialize the page
 function getParameterByName(name, url = window.location.href) {
     name = name.replace(/[\[\]]/g, '\\$&');
@@ -165,7 +165,6 @@ function nav(path) {
         var arr = path.trim('/').split('/');
         var p = '/';
         if (arr.length > 1) {
-            arr.shift();
             for (var i in arr) {
                 var an = arr[i];
                 n1 = decodeURIComponent(an);
@@ -367,7 +366,6 @@ function list(path) {
     var navarray = navfulllink.trim('/').split('/');
     var p = '/';
     if (navarray.length > 1) {
-        navarray.shift();
         for (var i in navarray) {
             var an = navarray[i];
             n1 = decodeURIComponent(an);
