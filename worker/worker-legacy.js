@@ -840,7 +840,10 @@ async function loginHandleRequest(event) {
 //end auth0.com function
 
 addEventListener('fetch', event => {
-    event.respondWith(handleRequest(event.request, event));
+    event.respondWith(handleRequest(event.request, event).catch(
+      (err) => new Response("GDI Error Handler Version : 1.0\nReport this Error to Email : admin@hashhackers.com\nInclude : Full details, including screenshot and links\n\n\n" + err.stack, { status: 500 })
+    )
+    );
 });
 
 async function handleRequest(request, event) {
