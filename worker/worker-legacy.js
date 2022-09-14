@@ -40,7 +40,7 @@ const authConfig = {
          // "auth": {"username":"password"} /* Remove double slash before "auth" to activate id password protection */
       },
       {
-          "id": "root",
+          "id": "",
           "name": "Drive Two",
           "protect_file_link": false,
          // "auth": {"username":"password", "username1":"password1"} /* Remove double slash before "auth" to activate id password protection */
@@ -122,7 +122,7 @@ const uiConfig = {
     "plyr_io_video_resolution": "16:9", // For reference, visit: https://github.com/sampotts/plyr#options
     "unauthorized_owner_link": "https://telegram.dog/Telegram", // Unauthorized Error Page Link to Owner
     "unauthorized_owner_email": "abuse@telegram.org", // Unauthorized Error Page Owner Email
-    "search_all_drives": false // gives gdrive links on search and searches all drives on that account, doesn't require adding
+    "convert_search_to_google_drive_app": false // gives gdrive links on search and searches all drives on that account, doesn't require adding
 };
 
 
@@ -1371,7 +1371,7 @@ class googleDrive {
         const types = DriveFixedTerms.gd_root_type;
         const is_user_drive = this.root_type === types.user_drive;
         const is_share_drive = this.root_type === types.share_drive;
-        const search_all_drives = `${uiConfig.search_all_drives}`
+        const convert_search_to_google_drive_app = `${uiConfig.convert_search_to_google_drive_app}`
         const empty_result = {
             nextPageToken: null,
             curPageIndex: page_index,
@@ -1389,7 +1389,7 @@ class googleDrive {
         let name_search_str = `name contains '${words.join("' AND name contains '")}'`;
         let params = {};
         if (is_user_drive) {
-            if (search_all_drives == 'true') {
+            if (convert_search_to_google_drive_app == 'true') {
                 params.corpora = 'allDrives';
                 params.includeItemsFromAllDrives = true;
                 params.supportsAllDrives = true;
@@ -1399,7 +1399,7 @@ class googleDrive {
             }
         }
         if (is_share_drive) {
-            if (search_all_drives == 'true') {
+            if (convert_search_to_google_drive_app == 'true') {
                 params.corpora = 'allDrives';
             }
             else {

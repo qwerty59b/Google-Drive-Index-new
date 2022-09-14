@@ -30,7 +30,7 @@ const authConfig = {
           "auth": {"username":"password"} /* Remove double slash before "auth" to activate id password protection */
       },
       {
-          "id": "root",
+          "id": "",
           "name": "Drive Two",
           "protect_file_link": false,
           "auth": {"username":"password", "username1":"password1"} /* Remove double slash before "auth" to activate id password protection */
