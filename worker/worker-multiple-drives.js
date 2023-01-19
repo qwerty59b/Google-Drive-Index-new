@@ -855,6 +855,7 @@ async function handleRequest(request, event) {
     var loginCheck = await loginHandleRequest(event)
     if(authConfig['enable_auth0_com'] && loginCheck != null){return loginCheck}
     const region = request.headers.get('cf-ipcountry').toUpperCase();
+    var asn_servers = '';
     try {var asn_servers = request.cf.asn;}catch {var asn_servers = 0;}
     const referer = request.headers.get("Referer");
     if (gds.length === 0) {
