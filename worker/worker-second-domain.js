@@ -12,6 +12,8 @@ const serviceaccounts = [
 {}
 ];
 const randomserviceaccount = serviceaccounts[Math.floor(Math.random()*serviceaccounts.length)]; // DO NOT TOUCH THIS
+const blocked_region = ['']; // add regional codes seperated by comma, eg. ['IN', 'US', 'PK']
+const blocked_asn = []; // add ASN numbers from http://www.bgplookingglass.com/list-of-autonomous-system-numbers, eg. [16509, 12345]
 const authConfig = {
     "client_id": "", // Client id from Google Cloud Console
     "client_secret": "", // Client Secret from Google Cloud Console
@@ -181,6 +183,9 @@ addEventListener('fetch', event => {
 });
 
 async function handleRequest(request, event) {
+    const region = request.headers.get('cf-ipcountry').toUpperCase();
+    var asn_servers = '';
+    try {var asn_servers = request.cf.asn;}catch {var asn_servers = 0;}
     if (gds.length === 0) {
         for (let i = 0; i < authConfig.roots.length; i++) {
             const gd = new googleDrive(authConfig, i);
@@ -212,15 +217,28 @@ async function handleRequest(request, event) {
         });
     }
 
-    if (request.method === 'POST') {
+    if (blocked_region.includes(region)) {
+        return new Response(asn_blocked, {
+            status: 403,
+            headers: {
+                "content-type": "text/html;charset=UTF-8",
+            },
+        })
+    } else if (blocked_asn.includes(asn_servers)) {
+        return new Response(asn_blocked, {
+                headers: {
+                    'content-type': 'text/html;charset=UTF-8'
+                },
+                status: 401
+            });
+    } else if (request.method === 'POST') {
         return new Response('{"message":"Method Not Allowed."}', {
             status: 403,
             headers: {
                 "content-type": "application/json;",
             },
         })
-    }
-    else if (path.endsWith('/')){
+    } else if (path.endsWith('/')){
         return new Response('{"message":"Content Not Found"}', {
             status: 403,
             headers: {

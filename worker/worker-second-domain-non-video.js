@@ -15,6 +15,8 @@ const serviceaccounts = [
 ];
 const redirectindexsite = ""; // add site to redirect video links to main index view page.
 const randomserviceaccount = serviceaccounts[Math.floor(Math.random()*serviceaccounts.length)]; // DO NOT TOUCH THIS
+const blocked_region = ['']; // add regional codes seperated by comma, eg. ['IN', 'US', 'PK']
+const blocked_asn = []; // add ASN numbers from http://www.bgplookingglass.com/list-of-autonomous-system-numbers, eg. [16509, 12345]
 const authConfig = {
     "client_id": "", // Client id from Google Cloud Console
     "client_secret": "", // Client Secret from Google Cloud Console
@@ -184,6 +186,9 @@ addEventListener('fetch', event => {
 });
 
 async function handleRequest(request, event) {
+    const region = request.headers.get('cf-ipcountry').toUpperCase();
+    var asn_servers = '';
+    try {var asn_servers = request.cf.asn;}catch {var asn_servers = 0;}
     if (gds.length === 0) {
         for (let i = 0; i < authConfig.roots.length; i++) {
             const gd = new googleDrive(authConfig, i);
@@ -214,7 +219,21 @@ async function handleRequest(request, event) {
         });
     }
 
-    if ("|mp4|webm|avi|mpg|mpeg|mkv|rm|rmvb|mov|wmv|asf|ts|flv|".indexOf(`|${ext}|`) >= 0) {
+    if (blocked_region.includes(region)) {
+        return new Response(asn_blocked, {
+            status: 403,
+            headers: {
+                "content-type": "text/html;charset=UTF-8",
+            },
+        })
+    } else if (blocked_asn.includes(asn_servers)) {
+        return new Response(asn_blocked, {
+                headers: {
+                    'content-type': 'text/html;charset=UTF-8'
+                },
+                status: 401
+            });
+    } else if ("|mp4|webm|avi|mpg|mpeg|mkv|rm|rmvb|mov|wmv|asf|ts|flv|".indexOf(`|${ext}|`) >= 0) {
             return new Response('', {
                 status: 307,
                 headers: {
