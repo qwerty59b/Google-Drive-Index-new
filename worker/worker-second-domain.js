@@ -92,6 +92,49 @@ function html(current_drive_order = 0, model = {}) {
 
 const deaderror = `<h2>Retrying...</h2><br><p>This page will keep refreshing if the URL you're trying to reach is incorrect.</p><meta http-equiv="refresh" content="0;url=?retry"/>`
 
+  const asn_blocked = `<html>
+  <head>
+  <title>Access Denied</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:100' rel='stylesheet' type='text/css'>
+  <style>
+  body{
+      margin:0;
+      padding:0;
+      width:100%;
+      height:100%;
+      color:#b0bec5;
+      display:table;
+      font-weight:100;
+      font-family:Lato
+  }
+  .container{
+      text-align:center;
+      display:table-cell;
+      vertical-align:middle
+  }
+  .content{
+      text-align:center;
+      display:inline-block
+  }
+  .message{
+      font-size:80px;
+      margin-bottom:40px
+  }
+  a{
+      text-decoration:none;
+      color:#3498db
+  }
+
+  </style>
+  </head>
+  <body>
+  <div class="container">
+  <div class="content">
+  <div class="message">Access Denied</div>
+  </div>
+  </div>
+  </body>
+  </html>`
 
 const SearchFunction = {
     formatSearchKeyword: function(keyword) {
@@ -184,8 +227,11 @@ addEventListener('fetch', event => {
 
 async function handleRequest(request, event) {
     const region = request.headers.get('cf-ipcountry').toUpperCase();
-    var asn_servers = '';
-    try {var asn_servers = request.cf.asn;}catch {var asn_servers = 0;}
+    try {
+      var asn_servers = request.cf.asn || 0000;
+    } catch {
+      var asn_servers = "null";
+    }
     if (gds.length === 0) {
         for (let i = 0; i < authConfig.roots.length; i++) {
             const gd = new googleDrive(authConfig, i);
