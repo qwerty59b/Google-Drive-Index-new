@@ -965,6 +965,10 @@ async function handleRequest(request, event) {
             }
         } else if (command === 'id2path' && request.method === 'POST') {
             return handleId2Path(request, gd)
+        } else if (command === 'findpath' && request.method === 'GET') {
+            const match = url.pathname.match(/^\/(\d+):/);
+            const prefix = match && "/" + match[1] + ":";
+            return findId2Path(request, gd, url, prefix)
         }
     }
 
@@ -1112,6 +1116,23 @@ async function handleId2Path(request, gd) {
     let form = await request.formData();
     let path = await gd.findPathById(form.get('id'));
     return new Response(path || '', option);
+}
+
+async function findId2Path(request, gd, url, prefix) {
+    const option = {
+        status: 200,
+        headers: {
+            'Access-Control-Allow-Origin': '*'
+        }
+    };
+    let path = await gd.findPathById(url.searchParams.get('id'));
+    if (!path) {
+        return new Response("Invalid URL");
+    } else if (url.searchParams.get('view')) {
+        return Response.redirect("https://" + url.hostname + prefix + path + "?a=view" || '', 302);
+    } else {
+        return Response.redirect("https://" + url.hostname + prefix + path || '', 302);
+    }
 }
 
 class googleDrive {

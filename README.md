@@ -199,6 +199,11 @@
 * Search only works if you use Shared Drive ID or root.
 * Search won't work or the bar won't appear if you're using Folder ID inside from root or Shared Drive. In Newer versions bar will appear but search won't work.
 
+## Linking [Anasty Repo](https://github.com/anasty17/mirror-leech-telegram-bot)
+
+* Based on Anasty's Idea.
+* Check Anasty's repo for more details to attach files and folders with this APP.
+
 ## Sorting by Name or Modified Time
 
 * Find `params.orderBy` in workers code L623 and L710.
