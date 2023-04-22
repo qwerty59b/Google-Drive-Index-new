@@ -49,7 +49,7 @@ const authConfig = {
          // "auth": {"username":"password", "username1":"password1"} /* Remove double slash before "auth" to activate id password protection */
       },
     ]};
-
+    var drive_list = authConfig.roots.map(it => it.id)
     const auth0 = {
           domain: "", // Tenent Domain from auth0.com website
           clientId: "", // App Client ID from auth0.com website
@@ -610,7 +610,7 @@ const decodeJWT = function(token) {
   try {
     return decodeURIComponent(escape(result))
   } catch (err) {
-    console.log(err)
+  //console.log(err)
     return result
   }
 }
@@ -650,7 +650,7 @@ const validateToken = token => {
 
     return true
   } catch (err) {
-    console.log(err.message)
+  //console.log(err.message)
     return false
   }
 }
@@ -921,9 +921,9 @@ async function handleRequest(request, event) {
                   },
                   status: 401
               });
-          console.log("Refer Null");
+        //console.log("Refer Null");
       } else if (referer.includes(hostname)) {
-          console.log("Refer Detected");
+        //console.log("Refer Detected");
       } else {
           return new Response(directlink, {
                   headers: {
@@ -931,7 +931,7 @@ async function handleRequest(request, event) {
                   },
                   status: 401
               });
-          console.log("Wrong Refer URL");
+        //console.log("Wrong Refer URL");
       }
     }
 
@@ -966,9 +966,7 @@ async function handleRequest(request, event) {
         } else if (command === 'id2path' && request.method === 'POST') {
             return handleId2Path(request, gd)
         } else if (command === 'findpath' && request.method === 'GET') {
-            const match = url.pathname.match(/^\/(\d+):/);
-            const prefix = match && "/" + match[1] + ":";
-            return findId2Path(request, gd, url, prefix)
+            return findId2Path(request, gd, url)
         }
     }
 
@@ -1114,24 +1112,24 @@ async function handleId2Path(request, gd) {
         }
     };
     let form = await request.formData();
-    let path = await gd.findPathById(form.get('id'));
+    let [path, prefix] = await gd.findPathById(form.get('id'));
     return new Response(path || '', option);
 }
 
-async function findId2Path(request, gd, url, prefix) {
+async function findId2Path(request, gd, url) {
     const option = {
         status: 200,
         headers: {
             'Access-Control-Allow-Origin': '*'
         }
     };
-    let path = await gd.findPathById(url.searchParams.get('id'));
+    let [path, prefix] = await gd.findPathById(url.searchParams.get('id'));
     if (!path) {
         return new Response("Invalid URL");
     } else if (url.searchParams.get('view')) {
-        return Response.redirect("https://" + url.hostname + prefix + path + "?a=view" || '', 302);
+        return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '', 302);
     } else {
-        return Response.redirect("https://" + url.hostname + prefix + path || '', 302);
+        return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path || '', 302);
     }
 }
 
@@ -1218,7 +1216,7 @@ class googleDrive {
                  break;
              }
              await this.sleep(800 * (i + 1));
-             console.log(res);
+             //console.log(res);
          }
         const second_domain_for_dl = `${uiConfig.second_domain_for_dl}`
         if (second_domain_for_dl == 'true') {
@@ -1439,7 +1437,7 @@ class googleDrive {
         };
     }
 
-    async findParentFilesRecursion(child_id, contain_myself = true) {
+    async findParentFilesRecursion(child_id, drive_index_no, contain_myself = true) {
         const gd = this;
         const gd_root_id = gd.root.id;
         const user_drive_real_root_id = authConfig.user_drive_real_root_id;
@@ -1448,16 +1446,17 @@ class googleDrive {
         const fields = DriveFixedTerms.default_file_fields;
         const parent_files = [];
         let meet_top = false;
-
         async function addItsFirstParent(file_obj) {
             if (!file_obj) return;
             if (!file_obj.parents) return;
             if (file_obj.parents.length < 1) return;
             let p_ids = file_obj.parents;
+            //console.log(p_ids)
             if (p_ids && p_ids.length > 0) {
                 const first_p_id = p_ids[0];
-                if (first_p_id === target_top_id) {
+                if (drive_list.includes(first_p_id)) {
                     meet_top = true;
+                    drive_index_no = drive_list.indexOf(first_p_id);
                     return;
                 }
                 const p_file_obj = await gd.findItemById(first_p_id);
@@ -1473,8 +1472,8 @@ class googleDrive {
             parent_files.push(child_obj);
         }
         await addItsFirstParent(child_obj);
-
-        return meet_top ? parent_files : null
+        //console.log(parent_files)
+        return meet_top ? [parent_files, drive_index_no] : null;
     }
 
     async findPathById(child_id) {
@@ -1482,7 +1481,7 @@ class googleDrive {
             return this.id_path_cache[child_id];
         }
 
-        const p_files = await this.findParentFilesRecursion(child_id);
+        const [p_files, drive_index_no] = await this.findParentFilesRecursion(child_id);
         if (!p_files || p_files.length < 1) return '';
 
         let cache = [];
@@ -1496,12 +1495,11 @@ class googleDrive {
                 path: path
             })
         });
-
         cache.forEach((obj) => {
             this.id_path_cache[obj.id] = obj.path;
             this.paths[obj.path] = obj.id
         });
-        return cache[0].path;
+        return [cache[0].path, drive_index_no];
     }
 
     async findItemById(id) {
@@ -1564,7 +1562,7 @@ class googleDrive {
     }
 
     async accessToken() {
-        console.log("accessToken");
+        //console.log("accessToken");
         if (this.authConfig.expires == undefined || this.authConfig.expires < Date.now()) {
             const obj = await this.fetchAccessToken();
             if (obj.access_token != undefined) {
@@ -1576,7 +1574,7 @@ class googleDrive {
     }
 
     async fetchAccessToken() {
-        console.log("fetchAccessToken");
+        //console.log("fetchAccessToken");
         const url = "https://www.googleapis.com/oauth2/v4/token";
         const headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -1647,7 +1645,7 @@ class googleDrive {
         return new Promise(function(resolve, reject) {
             let i = 0;
             setTimeout(function() {
-                console.log('sleep' + ms);
+                //console.log('sleep' + ms);
                 i++;
                 if (i >= 2) reject(new Error('i>=2'));
                 else resolve(i);
