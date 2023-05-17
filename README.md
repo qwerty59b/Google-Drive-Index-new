@@ -8,6 +8,8 @@
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://www.npmjs.com/package/@googledrive/index)
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://gitlab.com/GoogleDriveIndex/Google-Drive-Index&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://www.npmjs.com/package/@googledrive/index)
 
+[![Donate](https://i.imgur.com/cekBwbW.png)](https://pages.razorpay.com/rapidleech)
+
 ## Full White label and Customizable Index | One of a kind
 
 * Supports Both My and Team/Shared Drives with Dark Mode.
