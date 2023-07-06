@@ -71,7 +71,7 @@
 			  callbackUrl: "", // your domain with /auth at the end. eg. https://example.com/auth, add this in auth0.com too
 			  logoutUrl: "", // your domain logout page eg. https://example.com, add this in auth0.com too
 		}
-	
+		const drive_list = authConfig.roots.map(it => it.id)
 	/*
 	███████╗██████╗░██╗████████╗  ████████╗██╗░░██╗███████╗░██████╗███████╗
 	██╔════╝██╔══██╗██║╚══██╔══╝  ╚══██╔══╝██║░░██║██╔════╝██╔════╝██╔════╝
@@ -307,7 +307,7 @@
 						  document.getElementById("error-message").style.display = "block";
 						  document.getElementById("error-message").innerHTML = "Invalid Credentials";
 						} else {
-						  window.location.href = "/";
+						  window.location.reload();
 						}
 					  });
 				  });				  
@@ -854,7 +854,7 @@
 		);
 		const encodedId = new TextEncoder().encode(string);
 		const encryptedData = await crypto.subtle.encrypt(
-		  { name: "AES-CBC", iv },
+		  { name: "AES-CBC", iv: encrypt_iv },
 		  key,
 		  encodedId
 		);
@@ -862,7 +862,7 @@
 		return encryptedString;
 	}
 
-	async function decryptString(encryptedString, iv) {
+	async function decryptString(encryptedString) {
 		const key = await crypto.subtle.importKey(
 		  "raw",
 		  new TextEncoder().encode(crypto_base_key	),
@@ -872,7 +872,7 @@
 		);
 		const encryptedBytes = Uint8Array.from(atob(encryptedString), (char) => char.charCodeAt(0));
 		const decryptedData = await crypto.subtle.decrypt(
-		  { name: "AES-CBC", iv },
+		  { name: "AES-CBC", iv: encrypt_iv },
 		  key,
 		  encryptedBytes
 		);
@@ -935,9 +935,9 @@
 					if (session == 'null' || session == '' || session == null) {
 						return login()
 					}
-					const username = await decryptString(session.split('|')[0], encrypt_iv);
-					const password = await decryptString(session.split('|')[1], encrypt_iv);
-					const session_time = await decryptString(session.split('|')[2], encrypt_iv);
+					const username = await decryptString(session.split('|')[0]);
+					const password = await decryptString(session.split('|')[1]);
+					const session_time = await decryptString(session.split('|')[2]);
 					const current_time = Date.now(); // this results in a timestamp of the number of milliseconds since epoch.
 					const usersMap = {};
 					if (Number(session_time) < current_time) {
@@ -946,7 +946,7 @@
 								'Set-Cookie': `session=; HttpOnly; Secure; SameSite=Lax;`,
 							}
 						});
-						response.headers.set("Refresh", "1; url=/");
+						response.headers.set("Refresh", "1; url=#");
 						return response;
 					}
 					for (const user of authConfig.users_list) {
@@ -982,7 +982,7 @@
 				if (usersMap[username] === password) {
 					const current_time = Date.now(); // this results in a timestamp of the number of milliseconds since epoch.
 					const session_time = current_time + 86400000 * authConfig.login_days;
-					const encryptedSession = `${await encryptString(username, encrypt_iv)}|${await encryptString(password, encrypt_iv)}|${await encryptString(session_time.toString(), encrypt_iv)}`;
+					const encryptedSession = `${await encryptString(username)}|${await encryptString(password)}|${await encryptString(session_time.toString())}`;
 					const jsonResponse = {
 						ok: true,
 					}
@@ -1059,6 +1059,26 @@
 					"content-type": "text/html;charset=UTF-8",
 				},
 			})
+		} else if (path == '/download.aspx') {
+			console.log("Download.aspx started");
+			const file = await decryptString(url.searchParams.get('file'));
+			const expiry = await decryptString(url.searchParams.get('expiry'));
+			const integrity = await genIntegrity(`${file}|${expiry}`);
+			const mac = url.searchParams.get('mac');
+			const integrity_result = await checkintegrity(mac, integrity);
+			if (integrity_result) {
+				let range = request.headers.get('Range');
+				const inline = 'true' === url.searchParams.get('inline');
+				console.log(file, range)
+				return download(file, range, inline);
+			} else {
+				return new Response('Invalid Request!', {
+					status: 401,
+					headers: {
+						"content-type": "text/html;charset=UTF-8",
+					},
+				})
+			}
 		}
 	
 		if (authConfig['direct_link_protection']) {
@@ -1082,61 +1102,40 @@
 			  console.log("Wrong Refer URL");
 		  }
 		}
-	
-		const command_reg = /^\/(?<num>\d+):(?<command>[a-zA-Z0-9]+)\/?$|^\/download.aspx$/g;
-		const match = command_reg.exec(path);
+
 		
-		if (match) {
-		  if (match[0] === '/download.aspx') {
-			const file = await decryptString(url.searchParams.get('file'), encrypt_iv);
-			const expiry = await decryptString(url.searchParams.get('expiry'), encrypt_iv);
-			const integrity = await genIntegrity(`${file}|${expiry}`);
-			const mac = url.searchParams.get('mac');
-			const integrity_result = await checkintegrity(mac, integrity);
-			if (integrity_result) {
-				let range = request.headers.get('Range');
-				const inline_down = 'true' === url.searchParams.get('inline');
-				console.log(file, range)
-				return download(file, range);
-			} else {
-				return new Response('Invalid Request!', {
-					status: 401,
-					headers: {
-						"content-type": "text/html;charset=UTF-8",
-					},
-				})
-			}
+		  const command_reg = /^\/(?<num>\d+):(?<command>[a-zA-Z0-9]+)(\/.*)?$/g;
+		  const match = command_reg.exec(path);
+		  if (match) {
+			  const num = match.groups.num;
+			  const order = Number(num);
+			  if (order >= 0 && order < gds.length) {
+				  gd = gds[order];
+			  } else {
+				  return redirectToIndexPage()
+			  }
+			  //for (const r = gd.basicAuthResponse(request); r;) return r;
+			  const command = match.groups.command;
+			  if (command === 'search') {
+				  if (request.method === 'POST') {
+					  return handleSearch(request, gd);
+				  } else {
+					  const params = url.searchParams;
+					  return new Response(html(gd.order, {
+						  q: params.get("q").replace(/'/g, "").replace(/"/g, "") || '',
+						  is_search_page: true,
+						  root_type: gd.root_type
+					  }), {
+						  status: 200,
+						  headers: {
+							  'Content-Type': 'text/html; charset=utf-8'
+						  }
+					  });
+				  }
+			  } else if (command === 'id2path' && request.method === 'POST') {
+				  return handleId2Path(request, gd)
+			  }
 		  }
-		
-		  const num = match.groups.num;
-		  const order = Number(num);
-		  if (order >= 0 && order < gds.length) {
-			gd = gds[order];
-		  } else {
-			return redirectToIndexPage();
-		  }
-		
-		  const command = match.groups.command;
-		  if (command === 'search') {
-			if (request.method === 'POST') {
-			  return handleSearch(request, gd);
-			} else {
-			  const params = url.searchParams;
-			  return new Response(html(gd.order, {
-				q: params.get("q").replace(/'/g, "").replace(/"/g, "") || '',
-				is_search_page: true,
-				root_type: gd.root_type
-			  }), {
-				status: 200,
-				headers: {
-				  'Content-Type': 'text/html; charset=utf-8'
-				}
-			  });
-			}
-		  } else if (command === 'id2path' && request.method === 'POST') {
-			return handleId2Path(request, gd);
-		  }
-		}
 		
 
 
@@ -1153,16 +1152,16 @@
 				return redirectToIndexPage()
 			}
 		} catch (e) {
-			//return redirectToIndexPage()
+			return redirectToIndexPage()
 		}
 		
-		path = path.replace(gd.url_path_prefix, '') || '/';
+		//path = path.replace(gd.url_path_prefix, '') || '/';
 		if (request.method == 'POST') {
 			return apiRequest(request, gd);
 		}
 	
 		let action = url.searchParams.get('a');
-		if (path.substring(-1) == '/' || action != null) {
+		if (path.slice(-1) == '/' || action != null) {
 			return new Response(html(gd.order, {
 				root_type: gd.root_type
 			}), {
@@ -1172,26 +1171,18 @@
 				}
 			});
 		} else {
-		  try {
-			if (path.split('/').pop().toLowerCase() == ".password") {
+			/*if (path.split('/').pop().toLowerCase() == ".password") {
 				return  new Response("", {
 					status: 404
 				});
-			}
-			let file = await gd.get_single_file(path);
+			}*/
+			console.log(path)
+			const file = await gd.get_single_file(path.slice(3));
+			console.log(file)
 			let range = request.headers.get('Range');
-			const inline_down = 'true' === url.searchParams.get('inline');
+			const inline = 'true' === url.searchParams.get('inline');
 			if (gd.root.protect_file_link && enable_login) return login();
-			return download(file?.id, range, inline_down);
-		  }
-		  catch {
-				  return new Response(not_found, {
-					  status: 404,
-					  headers: {
-						  "content-type": "text/html;charset=UTF-8",
-					  },
-				  })
-		  }
+			return download(file.id, range, inline);
 	
 		}
 		async function accessToken() {
@@ -1245,6 +1236,14 @@
 			return await response.json();
 		}
 	
+		async function findItemById(id) {
+			const is_user_drive = this.root_type === DriveFixedTerms.gd_root_type.user_drive;
+			let url = `https://www.googleapis.com/drive/v3/files/${id}?fields=${DriveFixedTerms.default_file_fields}${is_user_drive ? '' : '&supportsAllDrives=true'}`;
+			let requestOption = await requestOptions();
+			let res = await fetch(url, requestOption);
+			return await res.json()
+		}
+
 		async function fetch200(url, requestOption) {
 		  let response;
 		  for (let i = 0; i < 3; i++) {
@@ -1266,10 +1265,21 @@
 			};
 		}
 	
-		async function download(id, range = '', inline = false) {
+		async function download(id, range = '', inline) {
 			let url = `https://www.googleapis.com/drive/v3/files/${id}?alt=media`;
 			const requestOption = await requestOptions();
 			requestOption.headers['Range'] = range;
+			let file = await findItemById(id);
+			if (!file.name) {
+			   return new Response(`{"error":"Unable to Find this File, Try Again."}`, {
+				 status: 500,
+				 headers: {
+					 "content-type": "application/json",
+					 "Access-Control-Allow-Origin": authConfig.cors_domain,
+					 "Cache-Control": "max-age=3600",
+				 }
+			   });
+		   }
 			let res;
 			 for (let i = 0; i < 3; i++) {
 				 res = await fetch(url, requestOption);
@@ -1289,9 +1299,9 @@
 				})
 			}
 			else if (res.ok) {
-				const {
-					headers
-				} = res = new Response(res.body, res)
+				const { headers } = res = new Response(res.body, res)
+				headers.set("Content-Disposition", `attachment; filename="${file.name}"`);
+				headers.set("Content-Length", file.size);
 				authConfig.enable_cors_file_down && headers.append('Access-Control-Allow-Origin', '*');
 				inline === true && headers.set('Content-Disposition', 'inline');
 				return res;
@@ -1364,7 +1374,7 @@
 			}
 		}
 	
-		if (path.substring(-1) == '/') {
+		if (path.slice(-1) == '/') {
 			let form = await request.formData();
 			let list_result = await gd.request_list_of_files(path, form.get('page_token'), Number(form.get('page_index')));
 	
@@ -1384,9 +1394,9 @@
 				  ...fileWithoutId
 				} = file;
 			  
-				const encryptedId = await encryptString(id, encrypt_iv);
-				const encryptedDriveId = await encryptString(driveId, encrypt_iv);
-				const link = await generateLink(id, encrypt_iv);
+				const encryptedId = await encryptString(id);
+				const encryptedDriveId = await encryptString(driveId);
+				const link = await generateLink(id);
 				return {
 				  ...fileWithoutId,
 				  id: encryptedId,
@@ -1406,9 +1416,9 @@
 			  ...fileWithoutId
 			} = file_json;
 			
-			const encryptedId = await encryptString(id, encrypt_iv);
-			const encryptedDriveId = await encryptString(driveId, encrypt_iv);
-			const link = await generateLink(id, encrypt_iv);
+			const encryptedId = await encryptString(id);
+			const encryptedDriveId = await encryptString(driveId);
+			const link = await generateLink(id);
 			const encryptedFile = {
 			  ...fileWithoutId,
 			  id: encryptedId,
@@ -1433,35 +1443,56 @@
 		};
 		let form = await request.formData();
 		let search_result = await gd.searchFilesinDrive(form.get('q') || '', form.get('page_token'), Number(form.get('page_index')));
-		const files = await search_result.data.files.map(async (file) => {
+		search_result.data.files = await Promise.all(search_result.data.files.map(async (file) => {
 			const {
-				driveId,
-				  id,
-				  ...fileWithoutId
+			  driveId,
+			  id,
+			  ...fileWithoutId
 			} = file;
-
-			const encryptedId = await encryptString(id, encrypt_iv);
-			const encryptedDriveId = await encryptString(driveId, encrypt_iv);
+		  
+			const encryptedId = await encryptString(id);
+			const encryptedDriveId = await encryptString(driveId);
+			const link = await generateLink(id);
 			return {
 			  ...fileWithoutId,
 			  id: encryptedId,
 			  driveId: encryptedDriveId,
+			  link: link,
 			};
-		});
-		const encryptedFiles = await Promise.all(files);
-		return new Response(JSON.stringify(encryptedFiles), option);
+		  }));
+		return new Response(JSON.stringify(search_result), option);
 	}
 	
 	async function handleId2Path(request, gd) {
+		let url = new URL(request.url);
 		const option = {
 			status: 200,
 			headers: {
-				'Access-Control-Allow-Origin': '*'
+				"content-type": "application/json",
+				"Access-Control-Allow-Origin": authConfig.cors_domain,
+				"Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
 			}
 		};
-		let form = await request.formData();
-		let path = await gd.findPathById(form.get('id'));
-		return new Response(path || '', option);
+		const {
+			searchParams
+		} = url
+		try {
+			const data = await request.json();
+			const id = await decryptString(data.id);
+			let [path, prefix] = await gd.findPathById(id);
+			let jsonpath = '{"path": "/' + prefix + ':' + path + '"}'
+			return new Response(jsonpath || '', option);
+		} catch (error) {
+			console.log(error)
+			return new Response('{"message":"Request Failed or Path Not Found","error":"' + error + '"}', {
+				status: 500,
+				headers: {
+					"content-type": "application/json",
+					"Access-Control-Allow-Origin": authConfig.cors_domain,
+					"Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
+				}
+			});
+		}
 	}
 	
 	class googleDrive {
@@ -1510,9 +1541,9 @@
 			let name = arr.pop();
 			name = decodeURIComponent(name).replace(/\'/g, "\\'");
 			let dir = arr.join('/') + '/';
-			// console.log(name, dir);
+			console.log("try "+ name, dir);
 			let parent = await this.findPathId(dir);
-			// console.log(parent);
+			console.log("try "+ parent)
 			let url = 'https://www.googleapis.com/drive/v3/files';
 			let params = {
 				'includeItemsFromAllDrives': true,
@@ -1696,7 +1727,7 @@
 			};
 		}
 	
-		async findParentFilesRecursion(child_id, contain_myself = true) {
+		async findParentFilesRecursion(child_id, drive_index_no, contain_myself = true) {
 			const gd = this;
 			const gd_root_id = gd.root.id;
 			const user_drive_real_root_id = authConfig.user_drive_real_root_id;
@@ -1705,16 +1736,17 @@
 			const fields = DriveFixedTerms.default_file_fields;
 			const parent_files = [];
 			let meet_top = false;
-	
 			async function addItsFirstParent(file_obj) {
 				if (!file_obj) return;
 				if (!file_obj.parents) return;
 				if (file_obj.parents.length < 1) return;
 				let p_ids = file_obj.parents;
+				//console.log(p_ids)
 				if (p_ids && p_ids.length > 0) {
 					const first_p_id = p_ids[0];
-					if (first_p_id === target_top_id) {
+					if (drive_list.includes(first_p_id)) {
 						meet_top = true;
+						drive_index_no = drive_list.indexOf(first_p_id);
 						return;
 					}
 					const p_file_obj = await gd.findItemById(first_p_id);
@@ -1730,8 +1762,8 @@
 				parent_files.push(child_obj);
 			}
 			await addItsFirstParent(child_obj);
-	
-			return meet_top ? parent_files : null
+			//console.log(parent_files)
+			return meet_top ? [parent_files, drive_index_no] : null;
 		}
 	
 		async findPathById(child_id) {
@@ -1739,7 +1771,7 @@
 				return this.id_path_cache[child_id];
 			}
 	
-			const p_files = await this.findParentFilesRecursion(child_id);
+			const [p_files, drive_index_no] = await this.findParentFilesRecursion(child_id);
 			if (!p_files || p_files.length < 1) return '';
 	
 			let cache = [];
@@ -1753,12 +1785,11 @@
 					path: path
 				})
 			});
-	
 			cache.forEach((obj) => {
 				this.id_path_cache[obj.id] = obj.path;
 				this.paths[obj.path] = obj.id
 			});
-			return cache[0].path;
+			return [cache[0].path, drive_index_no];
 		}
 	
 		async findItemById(id) {
@@ -1787,6 +1818,7 @@
 					break;
 				}
 			}
+			console.log('findPathId: ', path, c_id)
 			return this.paths[path];
 		}
 	
