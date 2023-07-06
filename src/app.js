@@ -49,34 +49,6 @@ function getDocumentHeight() {
     );
 }
 
-// Function to Decode Encoded JSON Data
-function gdidecode(str) {
-    var gdijsorg_0x5579 = ['join', 'toString', '114773LJlqPi', 'charCodeAt', '1evaKJu', '128429mQiVMM', '179727icrnig', '1276161MsgKkV', 'map', '111987FmCZVm', '6IEPbgT', '1924817UdCjIN', '328673bHHLnC', '14sGLkvR'];
-    var gdijsorg_0x22bf03 = gdijsorg_0x47d3;
-    (function(_0x2015a9, _0x2d2e6f) {
-        var _0x194131 = gdijsorg_0x47d3;
-        while (!![]) {
-            try {
-                var _0x50490c = parseInt(_0x194131(0x167)) * -parseInt(_0x194131(0x165)) + parseInt(_0x194131(0x160)) + parseInt(_0x194131(0x15e)) + -parseInt(_0x194131(0x161)) * -parseInt(_0x194131(0x15f)) + parseInt(_0x194131(0x162)) * -parseInt(_0x194131(0x168)) + -parseInt(_0x194131(0x16a)) + parseInt(_0x194131(0x169));
-                if (_0x50490c === _0x2d2e6f) break;
-                else _0x2015a9['push'](_0x2015a9['shift']());
-            } catch (_0x157d6c) {
-                _0x2015a9['push'](_0x2015a9['shift']());
-            }
-        }
-    }(gdijsorg_0x5579, 0xf40cd));
-
-    function gdijsorg_0x47d3(_0x4aefd5, _0x2d1551) {
-        _0x4aefd5 = _0x4aefd5 - 0x15e;
-        var _0x557938 = gdijsorg_0x5579[_0x4aefd5];
-        return _0x557938;
-    }
-    return decodeURIComponent(atob(str)['split']('')[gdijsorg_0x22bf03(0x16b)](function(_0x1cdc7a) {
-        var _0x416153 = gdijsorg_0x22bf03;
-        return '%' + ('00' + _0x1cdc7a[_0x416153(0x166)](0x0)[_0x416153(0x164)](0x10))['slice'](-0x2);
-    })[gdijsorg_0x22bf03(0x163)](''));
-}
-
 function render(path) {
     if (path.indexOf("?") > 0) {
         path = path.substr(0, path.indexOf("?"));
@@ -227,7 +199,7 @@ function requestListPath(path, params, resultCallback, authErrorCallback) {
     };
     $('#update').html(`<div class='alert alert-info' role='alert'> Connecting...</div></div></div>`);
     $.post(path, p, function(data, status) {
-        var res = jQuery.parseJSON(gdidecode(read(data)));
+        var res = jQuery.parseJSON(data);
         if (res && res.error && res.error.code == '401') {
             // Password verification failed
             if (authErrorCallback) authErrorCallback(path)
@@ -243,7 +215,7 @@ function requestListPath(path, params, resultCallback, authErrorCallback) {
         sleep(2000);
         $('#update').html(`<div class='alert alert-info' role='alert'> Retrying...</div></div></div>`);
         $.post(path, p, function(data, status) {
-            var res = jQuery.parseJSON(gdidecode(read(data)));
+            var res = jQuery.parseJSON(data);
             if (res && res.error && res.error.code == '401') {
                 // Password verification failed
                 if (authErrorCallback) authErrorCallback(path)
@@ -259,7 +231,7 @@ function requestListPath(path, params, resultCallback, authErrorCallback) {
             sleep(2000);
             $('#update').html(`<div class='alert alert-info' role='alert'> Retrying...</div></div></div>`);
             $.post(path, p, function(data, status) {
-                var res = jQuery.parseJSON(gdidecode(read(data)));
+                var res = jQuery.parseJSON(data);
                 if (res && res.error && res.error.code == '401') {
                     // Password verification failed
                     if (authErrorCallback) authErrorCallback(path)
@@ -294,7 +266,7 @@ function requestSearch(params, resultCallback) {
     };
     $('#update').html(`<div class='alert alert-info' role='alert'> Connecting...</div></div></div>`);
     $.post(`/${window.current_drive_order}:search`, p, function(data, status) {
-        var res = jQuery.parseJSON(gdidecode(read(data)));
+        var res = jQuery.parseJSON(data);
         if (res && res.data === null) {
             $('#spinner').remove();
             $('#list').html(`<div class='alert alert-danger' role='alert'> Server didn't sent any data.</div></div></div>`);
@@ -308,7 +280,7 @@ function requestSearch(params, resultCallback) {
         sleep(2000);
         $('#update').html(`<div class='alert alert-info' role='alert'> Retrying...</div></div></div>`);
         $.post(`/${window.current_drive_order}:search`, p, function(data, status) {
-            var res = jQuery.parseJSON(gdidecode(read(data)));
+            var res = jQuery.parseJSON(data);
             if (res && res.data === null) {
                 $('#spinner').remove();
                 $('#list').html(`<div class='alert alert-danger' role='alert'> Server didn't sent any data. </div></div></div>`);
@@ -322,7 +294,7 @@ function requestSearch(params, resultCallback) {
             sleep(2000);
             $('#update').html(`<div class='alert alert-info' role='alert'> Retrying...</div></div></div>`);
             $.post(`/${window.current_drive_order}:search`, p, function(data, status) {
-                var res = jQuery.parseJSON(gdidecode(read(data)));
+                var res = jQuery.parseJSON(data);
                 if (res && res.data === null) {
                     $('#spinner').remove();
                     $('#list').html(`<div class='alert alert-danger' role='alert'> Server didn't sent any data. </div></div></div>`);
@@ -858,7 +830,7 @@ function file_others(path) {
     $.post("",
         function(data) {
             try {
-                var obj = jQuery.parseJSON(gdidecode(read(data)));
+                var obj = jQuery.parseJSON(data);
                 var size = formatFileSize(obj.size);
                 var mimeType = obj.mimeType;
                 if (mimeType == "application/vnd.google-apps.folder") {
@@ -947,7 +919,8 @@ function file_code(path) {
     $.post("",
         function(data) {
             try {
-                var obj = jQuery.parseJSON(gdidecode(read(data)));
+                var obj = jQuery.parseJSON(data);
+                console.log(obj);
                 var size = formatFileSize(obj.size);
                 var content = `
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/themes/prism-twilight.css" integrity="sha256-Rl83wx+fN2p2ioYpdvpWxuhAbxj+/7IwaZrKQBu/KQE=" crossorigin="anonymous">
@@ -1022,7 +995,7 @@ function file_video(path) {
     $.post("",
         function(data) {
             try {
-                var obj = jQuery.parseJSON(gdidecode(read(data)));
+                var obj = jQuery.parseJSON(data);
                 var size = formatFileSize(obj.size);
                 if (obj.thumbnailLink != null) {
                     var poster = obj.thumbnailLink.slice(0, -5);
@@ -1120,7 +1093,7 @@ function file_audio(path) {
     $.post("",
         function(data) {
             try {
-                var obj = jQuery.parseJSON(gdidecode(read(data)));
+                var obj = jQuery.parseJSON(data);
                 var size = formatFileSize(obj.size);
                 var content = `
   <div class="container"><br>
@@ -1192,7 +1165,7 @@ function file_pdf(path) {
     $.post("",
         function(data) {
             try {
-                var obj = jQuery.parseJSON(gdidecode(read(data)));
+                var obj = jQuery.parseJSON(data);
                 var size = formatFileSize(obj.size);
                 var content = `
   <script>
@@ -1366,7 +1339,7 @@ function file_image(path) {
     $.post("",
         function(data) {
             try {
-                var obj = jQuery.parseJSON(gdidecode(read(data)));
+                var obj = jQuery.parseJSON(data);
                 var size = formatFileSize(obj.size);
                 var content = `
   <div class="container"><br>
@@ -1499,34 +1472,6 @@ function markdown(el, data) {
 window.onpopstate = function() {
     var path = window.location.pathname;
     render(path);
-}
-
-// Function to read JSON Data
-function read(str) {
-    var gdijsorg_0x1207 = ['join', '645298GrGsiK', '8269zzjDhb', '28wpErfD', '11eoSBcm', '3578714TboDnQ', 'slice', '52214BJnTpj', '14039GFHzjM', '187451gnBzKk', 'substr', 'reverse', '1262156NwMIzh', '2nDedhJ', 'split'];
-    var gdijsorg_0x570bf1 = gdijsorg_0x158f;
-
-    function gdijsorg_0x158f(_0x32bcea, _0x29ebfd) {
-        _0x32bcea = _0x32bcea - 0x150;
-        var _0x1207c1 = gdijsorg_0x1207[_0x32bcea];
-        return _0x1207c1;
-    }(function(_0xbbe83c, _0xbbffd8) {
-        var _0x2feec5 = gdijsorg_0x158f;
-        while (!![]) {
-            try {
-                var _0x5d3639 = parseInt(_0x2feec5(0x15c)) * -parseInt(_0x2feec5(0x150)) + -parseInt(_0x2feec5(0x15b)) + -parseInt(_0x2feec5(0x157)) + parseInt(_0x2feec5(0x151)) * parseInt(_0x2feec5(0x152)) + parseInt(_0x2feec5(0x153)) * -parseInt(_0x2feec5(0x156)) + parseInt(_0x2feec5(0x158)) + parseInt(_0x2feec5(0x154));
-                if (_0x5d3639 === _0xbbffd8) break;
-                else _0xbbe83c['push'](_0xbbe83c['shift']());
-            } catch (_0x2894d2) {
-                _0xbbe83c['push'](_0xbbe83c['shift']());
-            }
-        }
-    }(gdijsorg_0x1207, 0xd11e8));
-    var sa = str[gdijsorg_0x570bf1(0x15d)](''),
-        ra = sa[gdijsorg_0x570bf1(0x15a)](),
-        ja = ra[gdijsorg_0x570bf1(0x15e)](''),
-        aj = ja[gdijsorg_0x570bf1(0x159)](0x18)[gdijsorg_0x570bf1(0x155)](0x0, -0x14);
-    return aj;
 }
 
 $(function() {

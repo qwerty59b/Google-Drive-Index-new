@@ -37,6 +37,7 @@
 		"enable_auth0_com": false, // follow guide to add auth0.com to secure index with powerful login based system
 		"enable_login": true, // set to true if you want to add login system
 		"login_days" : 7, // days to keep logged in
+		"file_link_expiry" : 7, // expire file link in set number of days
 		"users_list": [
 			{
 				"username": "admin",
@@ -843,7 +844,6 @@
 	//end auth0.com function
 	
 	// web crypto functions
-
 	async function encryptString(string, iv) {
 		const key = await crypto.subtle.importKey(
 		  "raw",
@@ -878,7 +878,27 @@
 		);
 		const decryptedString = new TextDecoder().decode(decryptedData);
 		return decryptedString;
-	  }
+	}
+
+	async function genIntegrity(data) {
+		const encoder = new TextEncoder();
+		const dataBuffer = encoder.encode(data);
+	  
+		const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+	  
+		// Convert the hash buffer to hexadecimal string
+		const hashArray = Array.from(new Uint8Array(hashBuffer));
+		const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+	  
+		return hashHex;
+	}
+
+	async function checkintegrity(text1, text2) {
+		const hash1 = await genIntegrity(text1);
+		const hash2 = await genIntegrity(text2);
+	  
+		return hash1 === hash2;
+	}
 
 	addEventListener('fetch', event => {
 		event.respondWith(handleRequest(event.request, event));
@@ -893,6 +913,8 @@
 		});
 	}
 
+
+// start handlerequest
 	async function handleRequest(request, event) {
 		//var loginCheck = await loginHandleRequest(event)
 		//if(authConfig['enable_auth0_com'] && loginCheck != null){return loginCheck}
@@ -902,23 +924,23 @@
 		let url = new URL(request.url);
 		let path = url.pathname;
 		let hostname = url.hostname;
+
 		if (authConfig.enable_login) {
-			console.log("Login Enabled")
+			//console.log("Login Enabled")
 			if (request.method === 'GET') {
-				console.log("GET Request")
+				//console.log("GET Request")
 				const cookie = request.headers.get('cookie');
 				if (cookie && cookie.includes('session=')) {
 					const session = cookie.split('session=').pop().split(';').shift().trim();
 					if (session == 'null' || session == '' || session == null) {
 						return login()
 					}
-					const decryptedSession = await decryptString(session, encrypt_iv);
+					const username = await decryptString(session.split('|')[0], encrypt_iv);
+					const password = await decryptString(session.split('|')[1], encrypt_iv);
+					const session_time = await decryptString(session.split('|')[2], encrypt_iv);
 					const current_time = Date.now(); // this results in a timestamp of the number of milliseconds since epoch.
-					const username = decryptedSession.split('|')[0];
-					const password = decryptedSession.split('|')[1];
-					const session_time = decryptedSession.split('|')[2];
 					const usersMap = {};
-					if (session_time < current_time) {
+					if (Number(session_time) < current_time) {
 						let response = new Response('Session Expired!', {
 							headers: {
 								'Set-Cookie': `session=; HttpOnly; Secure; SameSite=Lax;`,
@@ -929,10 +951,10 @@
 					}
 					for (const user of authConfig.users_list) {
 						usersMap[user.username] = username;
-						console.log(user.username, username)
+						//console.log(user.username, username)
 					  }
 					if (usersMap[username] === password) {
-						console.log("Logged In")
+						//console.log("Logged In")
 					} else {
 						let response = new Response('Invalid User!', {
 						});
@@ -960,8 +982,7 @@
 				if (usersMap[username] === password) {
 					const current_time = Date.now(); // this results in a timestamp of the number of milliseconds since epoch.
 					const session_time = current_time + 86400000 * authConfig.login_days;
-					const session = `${username}|${password}|${session_time}`;
-					const encryptedSession = await encryptString(session, encrypt_iv);
+					const encryptedSession = `${await encryptString(username, encrypt_iv)}|${await encryptString(password, encrypt_iv)}|${await encryptString(session_time.toString(), encrypt_iv)}`;
 					const jsonResponse = {
 						ok: true,
 					}
@@ -1016,7 +1037,7 @@
 				}
 			});
 		}
-	
+
 		if (region && blocked_region.includes(region.toUpperCase())) {
 			return new Response(asn_blocked, {
 				status: 403,
@@ -1062,39 +1083,63 @@
 		  }
 		}
 	
-		const command_reg = /^\/(?<num>\d+):(?<command>[a-zA-Z0-9]+)(\/.*)?$/g;
+		const command_reg = /^\/(?<num>\d+):(?<command>[a-zA-Z0-9]+)\/?$|^\/download.aspx$/g;
 		const match = command_reg.exec(path);
+		
 		if (match) {
-			const num = match.groups.num;
-			const order = Number(num);
-			if (order >= 0 && order < gds.length) {
-				gd = gds[order];
+		  if (match[0] === '/download.aspx') {
+			const file = await decryptString(url.searchParams.get('file'), encrypt_iv);
+			const expiry = await decryptString(url.searchParams.get('expiry'), encrypt_iv);
+			const integrity = await genIntegrity(`${file}|${expiry}`);
+			const mac = url.searchParams.get('mac');
+			const integrity_result = await checkintegrity(mac, integrity);
+			if (integrity_result) {
+				let range = request.headers.get('Range');
+				const inline_down = 'true' === url.searchParams.get('inline');
+				console.log(file, range)
+				return download(file, range);
 			} else {
-				return redirectToIndexPage()
+				return new Response('Invalid Request!', {
+					status: 401,
+					headers: {
+						"content-type": "text/html;charset=UTF-8",
+					},
+				})
 			}
-			for (const r = gd.basicAuthResponse(request); r;) return r;
-			const command = match.groups.command;
-			if (command === 'search') {
-				if (request.method === 'POST') {
-					return handleSearch(request, gd);
-				} else {
-					const params = url.searchParams;
-					return new Response(html(gd.order, {
-						q: params.get("q").replace(/'/g, "").replace(/"/g, "") || '',
-						is_search_page: true,
-						root_type: gd.root_type
-					}), {
-						status: 200,
-						headers: {
-							'Content-Type': 'text/html; charset=utf-8'
-						}
-					});
+		  }
+		
+		  const num = match.groups.num;
+		  const order = Number(num);
+		  if (order >= 0 && order < gds.length) {
+			gd = gds[order];
+		  } else {
+			return redirectToIndexPage();
+		  }
+		
+		  const command = match.groups.command;
+		  if (command === 'search') {
+			if (request.method === 'POST') {
+			  return handleSearch(request, gd);
+			} else {
+			  const params = url.searchParams;
+			  return new Response(html(gd.order, {
+				q: params.get("q").replace(/'/g, "").replace(/"/g, "") || '',
+				is_search_page: true,
+				root_type: gd.root_type
+			  }), {
+				status: 200,
+				headers: {
+				  'Content-Type': 'text/html; charset=utf-8'
 				}
-			} else if (command === 'id2path' && request.method === 'POST') {
-				return handleId2Path(request, gd)
+			  });
 			}
+		  } else if (command === 'id2path' && request.method === 'POST') {
+			return handleId2Path(request, gd);
+		  }
 		}
-	
+		
+
+
 		const common_reg = /^\/\d+:\/.*$/g;
 		try {
 			if (!path.match(common_reg)) {
@@ -1108,20 +1153,17 @@
 				return redirectToIndexPage()
 			}
 		} catch (e) {
-			return redirectToIndexPage()
+			//return redirectToIndexPage()
 		}
-	
-		const basic_auth_res = gd.basicAuthResponse(request);
-	
+		
 		path = path.replace(gd.url_path_prefix, '') || '/';
 		if (request.method == 'POST') {
-			return basic_auth_res || apiRequest(request, gd);
+			return apiRequest(request, gd);
 		}
 	
 		let action = url.searchParams.get('a');
-	
-		if (path.substr(-1) == '/' || action != null) {
-			return basic_auth_res || new Response(html(gd.order, {
+		if (path.substring(-1) == '/' || action != null) {
+			return new Response(html(gd.order, {
 				root_type: gd.root_type
 			}), {
 				status: 200,
@@ -1131,16 +1173,16 @@
 			});
 		} else {
 		  try {
-		  if (path.split('/').pop().toLowerCase() == ".password") {
-			  return basic_auth_res || new Response("", {
-				  status: 404
-			  });
-		  }
-		  let file = await gd.file(path);
-		  let range = request.headers.get('Range');
-		  const inline_down = 'true' === url.searchParams.get('inline');
-		  if (gd.root.protect_file_link && basic_auth_res) return basic_auth_res;
-		  return gd.down(file?.id, range, inline_down);
+			if (path.split('/').pop().toLowerCase() == ".password") {
+				return  new Response("", {
+					status: 404
+				});
+			}
+			let file = await gd.get_single_file(path);
+			let range = request.headers.get('Range');
+			const inline_down = 'true' === url.searchParams.get('inline');
+			if (gd.root.protect_file_link && enable_login) return login();
+			return download(file?.id, range, inline_down);
 		  }
 		  catch {
 				  return new Response(not_found, {
@@ -1152,35 +1194,164 @@
 		  }
 	
 		}
-	}
-	
-	function gdiencode(str) {
-		var gdijsorg_0x40df = ['1KzJBAK', '1697708zMrtEu', '295396TasIvj', '21011Eyuayv', '1217593CxovUD', 'fromCharCode', '143062xekFCR', 'replace', '74bcHwvq', '73939wlqHSM', '2CBdqkc', '1712527AcNPoP'];
-		var gdijsorg_0x5556bb = gdijsorg_0x56b1;
-		(function(_0x3f3911, _0x38bce9) {
-			var _0x32440e = gdijsorg_0x56b1;
-			while (!![]) {
-				try {
-					var _0x2cab6f = -parseInt(_0x32440e(0xb3)) + -parseInt(_0x32440e(0xb7)) * -parseInt(_0x32440e(0xb6)) + -parseInt(_0x32440e(0xaf)) * -parseInt(_0x32440e(0xad)) + -parseInt(_0x32440e(0xb1)) + parseInt(_0x32440e(0xae)) + parseInt(_0x32440e(0xac)) + parseInt(_0x32440e(0xb0)) * -parseInt(_0x32440e(0xb5));
-					if (_0x2cab6f === _0x38bce9) break;
-					else _0x3f3911['push'](_0x3f3911['shift']());
-				} catch (_0x34d506) {
-					_0x3f3911['push'](_0x3f3911['shift']());
+		async function accessToken() {
+			console.log("accessToken");
+			if (authConfig.expires == undefined || authConfig.expires < Date.now()) {
+				const obj = await fetchAccessToken();
+				if (obj.access_token != undefined) {
+					authConfig.accessToken = obj.access_token;
+					authConfig.expires = Date.now() + 3500 * 1000;
 				}
 			}
-		}(gdijsorg_0x40df, 0xe5038));
-	
-		function gdijsorg_0x56b1(_0x1ccc20, _0x1596c4) {
-			_0x1ccc20 = _0x1ccc20 - 0xac;
-			var _0x40df0f = gdijsorg_0x40df[_0x1ccc20];
-			return _0x40df0f;
+			return authConfig.accessToken;
 		}
-		return btoa(encodeURIComponent(str)[gdijsorg_0x5556bb(0xb4)](/%([0-9A-F]{2})/g, function toSolidBytes(_0xe8cc7f, _0x12410f) {
-			var _0x1cce23 = gdijsorg_0x5556bb;
-			return String[_0x1cce23(0xb2)]('0x' + _0x12410f);
-		}));
-	}
 	
+		async function fetchAccessToken() {
+			console.log("fetchAccessToken");
+			const url = "https://www.googleapis.com/oauth2/v4/token";
+			const headers = {
+				'Content-Type': 'application/x-www-form-urlencoded'
+			};
+			var post_data;
+			if (authConfig.service_account && typeof authConfig.service_account_json != "undefined") {
+				const jwttoken = await JSONWebToken.generateGCPToken(this.authConfig.service_account_json);
+				post_data = {
+					grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+					assertion: jwttoken,
+				};
+			} else {
+				post_data = {
+					client_id: authConfig.client_id,
+					client_secret: authConfig.client_secret,
+					refresh_token: authConfig.refresh_token,
+					grant_type: "refresh_token",
+				};
+			}
+	
+			let requestOption = {
+				'method': 'POST',
+				'headers': headers,
+				'body': enQuery(post_data)
+			};
+	
+			let response;
+			for (let i = 0; i < 3; i++) {
+				response = await fetch(url, requestOption);
+				if (response.ok) {
+					break;
+				}
+				await sleep(800 * (i + 1));
+			}
+			return await response.json();
+		}
+	
+		async function fetch200(url, requestOption) {
+		  let response;
+		  for (let i = 0; i < 3; i++) {
+			  response = await fetch(url, requestOption);
+			  if (response.ok) {
+				  break;
+			  }
+			  await this.sleep(800 * (i + 1));
+		  }
+			return response;
+		}
+	
+		async function requestOptions(headers = {}, method = 'GET') {
+			const Token = await accessToken();
+			headers['authorization'] = 'Bearer ' + Token;
+			return {
+				'method': method,
+				'headers': headers
+			};
+		}
+	
+		async function download(id, range = '', inline = false) {
+			let url = `https://www.googleapis.com/drive/v3/files/${id}?alt=media`;
+			const requestOption = await requestOptions();
+			requestOption.headers['Range'] = range;
+			let res;
+			 for (let i = 0; i < 3; i++) {
+				 res = await fetch(url, requestOption);
+				 if (res.ok) {
+					 break;
+				 }
+				 await sleep(800 * (i + 1));
+				 console.log(res);
+			 }
+			const second_domain_for_dl = `${uiConfig.second_domain_for_dl}`
+			if (second_domain_for_dl == 'true') {
+				const res = await fetch(`${uiConfig.jsdelivr_cdn_src}@${uiConfig.version}/assets/disable_download.html`);
+				return new Response(await res.text(), {
+					headers: {
+						"content-type": "text/html;charset=UTF-8",
+					},
+				})
+			}
+			else if (res.ok) {
+				const {
+					headers
+				} = res = new Response(res.body, res)
+				authConfig.enable_cors_file_down && headers.append('Access-Control-Allow-Origin', '*');
+				inline === true && headers.set('Content-Disposition', 'inline');
+				return res;
+			}
+			else if(res.status == 404){
+				return new Response(not_found, {
+					status: 404,
+					headers: {
+						"content-type": "text/html;charset=UTF-8",
+					},
+				})
+			} else if (res.status == 403) {
+				return new Response("fileNotDownloadable", {
+					status: 403,
+					headers: {
+						"content-type": "text/html;charset=UTF-8",
+					},
+				})
+			} else {
+				/*const res = await fetch(`${uiConfig.jsdelivr_cdn_src}@${uiConfig.version}/assets/download_error.html`);
+				return new Response(await res.text(), {
+					headers: {
+						"content-type": "text/html;charset=UTF-8",
+					},
+				})*/
+				return new Response(await res.text(), {}
+				)
+			}
+		}
+	
+		function enQuery(data) {
+			const ret = [];
+			for (let d in data) {
+				ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
+			}
+			return ret.join('&');
+		}
+	
+		async function sleep(ms) {
+			return new Promise(function(resolve, reject) {
+				let i = 0;
+				setTimeout(function() {
+					console.log('sleep' + ms);
+					i++;
+					if (i >= 2) reject(new Error('i>=2'));
+					else resolve(i);
+				}, ms);
+			})
+		}
+	}
+// end handlerequest
+	async function generateLink(file_id, iv) {
+		const encrypted_id = await encryptString(file_id, iv);
+		const expiry = Date.now() + 1000 * 60 * 60 * 24 * authConfig.file_link_expiry;
+		const encrypted_expiry = await encryptString(expiry.toString(), iv);
+		const integrity	= await genIntegrity(`${file_id}|${expiry}`);
+		const url = `/download.aspx?file=${encodeURIComponent(encrypted_id)}&expiry=${encodeURIComponent(encrypted_expiry)}&mac=${encodeURIComponent(integrity)}`;
+		return url;
+	}
+
 	async function apiRequest(request, gd) {
 		let url = new URL(request.url);
 		let path = url.pathname;
@@ -1193,9 +1364,9 @@
 			}
 		}
 	
-		if (path.substr(-1) == '/') {
+		if (path.substring(-1) == '/') {
 			let form = await request.formData();
-			let deferred_list_result = gd.list(path, form.get('page_token'), Number(form.get('page_index')));
+			let list_result = await gd.request_list_of_files(path, form.get('page_token'), Number(form.get('page_index')));
 	
 			if (authConfig['enable_password_file_verify']) {
 				let password = await gd.password(path);
@@ -1206,12 +1377,49 @@
 				}
 			}
 	
-			let list_result = await deferred_list_result;
-			return new Response(rewrite(gdiencode(JSON.stringify(list_result), option)));
+			list_result.data.files = await Promise.all(list_result.data.files.map(async (file) => {
+				const {
+				  driveId,
+				  id,
+				  ...fileWithoutId
+				} = file;
+			  
+				const encryptedId = await encryptString(id, encrypt_iv);
+				const encryptedDriveId = await encryptString(driveId, encrypt_iv);
+				const link = await generateLink(id, encrypt_iv);
+				return {
+				  ...fileWithoutId,
+				  id: encryptedId,
+				  driveId: encryptedDriveId,
+				  link: link,
+				};
+			  }));
+			  
+			const encryptedFiles = list_result;
+			  
+			return new Response(JSON.stringify(encryptedFiles), option);
 		} else {
-			let file = await gd.file(path);
+			let file_json = await gd.get_single_file(path);
+			const {
+			  driveId,
+			  id,
+			  ...fileWithoutId
+			} = file_json;
+			
+			const encryptedId = await encryptString(id, encrypt_iv);
+			const encryptedDriveId = await encryptString(driveId, encrypt_iv);
+			const link = await generateLink(id, encrypt_iv);
+			const encryptedFile = {
+			  ...fileWithoutId,
+			  id: encryptedId,
+			  driveId: encryptedDriveId,
+			  link: link,
+			};
+			
+			const encryptedFiles = encryptedFile;
+			
 			let range = request.headers.get('Range');
-			return new Response(rewrite(gdiencode(JSON.stringify(file))));
+			return new Response(JSON.stringify(encryptedFiles));
 		}
 	}
 	
@@ -1224,9 +1432,24 @@
 			}
 		};
 		let form = await request.formData();
-		let search_result = await
-		gd.search(form.get('q') || '', form.get('page_token'), Number(form.get('page_index')));
-		return new Response(rewrite(gdiencode(JSON.stringify(search_result), option)));
+		let search_result = await gd.searchFilesinDrive(form.get('q') || '', form.get('page_token'), Number(form.get('page_index')));
+		const files = await search_result.data.files.map(async (file) => {
+			const {
+				driveId,
+				  id,
+				  ...fileWithoutId
+			} = file;
+
+			const encryptedId = await encryptString(id, encrypt_iv);
+			const encryptedDriveId = await encryptString(driveId, encrypt_iv);
+			return {
+			  ...fileWithoutId,
+			  id: encryptedId,
+			  driveId: encryptedDriveId,
+			};
+		});
+		const encryptedFiles = await Promise.all(files);
+		return new Response(JSON.stringify(encryptedFiles), option);
 	}
 	
 	async function handleId2Path(request, gd) {
@@ -1273,102 +1496,16 @@
 				this.root_type = types.share_drive;
 			}
 		}
+
 	
-		basicAuthResponse(request) {
-			let url = new URL(request.url);
-			let path = url.pathname;
-			const auth = this.root.auth || '',
-				_401 = new Response(login_html, {
-					headers: {
-						'WWW-Authenticate': `Basic realm="goindex:drive:${this.order}"`,
-						'content-type': 'text/html;charset=UTF-8'
-					},
-					status: 401
-				});
-			if (authConfig['lock_folders']) {
-				if (auth && path.endsWith("/") || path.endsWith("search")) {
-					const _auth = request.headers.get('Authorization')
-					if (_auth) {
-						const [received_user, received_pass] = atob(_auth.split(' ').pop()).split(':');
-						if (auth.hasOwnProperty(received_user)) {
-							if (auth[received_user] == received_pass) {
-								return null;
-							} else return _401;
-						} else return _401;
-					}
-				} else return null;
-			} else {
-					if (auth) {
-						const _auth = request.headers.get('Authorization')
-						if (_auth) {
-							const [received_user, received_pass] = atob(_auth.split(' ').pop()).split(':');
-							if (auth.hasOwnProperty(received_user)) {
-								if (auth[received_user] == received_pass) {
-									return null;
-								} else return _401;
-							} else return _401;
-						}
-					} else return null;
-			}
-			return _401;
-		}
-	
-		async down(id, range = '', inline = false) {
-			let url = `https://www.googleapis.com/drive/v3/files/${id}?alt=media`;
-			let requestOption = await this.requestOption();
-			requestOption.headers['Range'] = range;
-			let res;
-			 for (let i = 0; i < 3; i++) {
-				 res = await fetch(url, requestOption);
-				 if (res.ok) {
-					 break;
-				 }
-				 await this.sleep(800 * (i + 1));
-				 console.log(res);
-			 }
-			const second_domain_for_dl = `${uiConfig.second_domain_for_dl}`
-			if (second_domain_for_dl == 'true') {
-				const res = await fetch(`${uiConfig.jsdelivr_cdn_src}@${uiConfig.version}/assets/disable_download.html`);
-				return new Response(await res.text(), {
-					headers: {
-						"content-type": "text/html;charset=UTF-8",
-					},
-				})
-			}
-			else if (res.ok) {
-				const {
-					headers
-				} = res = new Response(res.body, res)
-				this.authConfig.enable_cors_file_down && headers.append('Access-Control-Allow-Origin', '*');
-				inline === true && headers.set('Content-Disposition', 'inline');
-				return res;
-			}
-			else if(res.status == 404){
-				return new Response(not_found, {
-					status: 404,
-					headers: {
-						"content-type": "text/html;charset=UTF-8",
-					},
-				})
-			}
-			else {
-				const res = await fetch(`${uiConfig.jsdelivr_cdn_src}@${uiConfig.version}/assets/download_error.html`);
-				return new Response(await res.text(), {
-					headers: {
-						"content-type": "text/html;charset=UTF-8",
-					},
-				})
-			}
-		}
-	
-		async file(path) {
+		async get_single_file(path) {
 			if (typeof this.files[path] == 'undefined') {
-				this.files[path] = await this._file(path);
+				this.files[path] = await this.get_single_file_api(path);
 			}
 			return this.files[path];
 		}
 	
-		async _file(path) {
+		async get_single_file_api(path) {
 			let arr = path.split('/');
 			let name = arr.pop();
 			name = decodeURIComponent(name).replace(/\'/g, "\\'");
@@ -1382,7 +1519,7 @@
 				'supportsAllDrives': true
 			};
 			params.q = `'${parent}' in parents and name = '${name}' and trashed = false and mimeType != 'application/vnd.google-apps.shortcut'`;
-			params.fields = "files(id, name, mimeType, size ,createdTime, modifiedTime, iconLink, thumbnailLink)";
+			params.fields = "files(id, name, mimeType, size ,createdTime, modifiedTime, iconLink, thumbnailLink, driveId)";
 			url += '?' + this.enQuery(params);
 			let requestOption = await this.requestOption();
 			let response;
@@ -1398,7 +1535,7 @@
 			return obj.files[0];
 		}
 	
-		async list(path, page_token = null, page_index = 0) {
+		async request_list_of_files(path, page_token = null, page_index = 0) {
 			if (this.path_children_cache == undefined) {
 				// { <path> :[ {nextPageToken:'',data:{}}, {nextPageToken:'',data:{}} ...], ...}
 				this.path_children_cache = {};
@@ -1417,7 +1554,7 @@
 			}
 	
 			let id = await this.findPathId(path);
-			let result = await this._ls(id, page_token, page_index);
+			let result = await this._list_gdrive_files(id, page_token, page_index);
 			let data = result.data;
 			if (result.nextPageToken && data.files) {
 				if (!Array.isArray(this.path_children_cache[path])) {
@@ -1432,8 +1569,8 @@
 			return result
 		}
 	
-	
-		async _ls(parent, page_token = null, page_index = 0) {
+		// listing files usign google drive api
+		async _list_gdrive_files(parent, page_token = null, page_index = 0) {
 	
 			if (parent == undefined) {
 				return null;
@@ -1444,8 +1581,8 @@
 				'supportsAllDrives': true
 			};
 			params.q = `'${parent}' in parents and trashed = false AND name !='.password' and mimeType != 'application/vnd.google-apps.shortcut' and mimeType != 'application/vnd.google-apps.document' and mimeType != 'application/vnd.google-apps.spreadsheet' and mimeType != 'application/vnd.google-apps.form' and mimeType != 'application/vnd.google-apps.site'`;
-			params.orderBy = 'folder,name,modifiedTime desc';
-			params.fields = "nextPageToken, files(id, name, mimeType, size , modifiedTime)";
+			params.orderBy = 'folder, name, modifiedTime desc';
+			params.fields = "nextPageToken, files(id, name, mimeType, size, modifiedTime, driveId, kind)";
 			params.pageSize = this.authConfig.files_list_page_size;
 	
 			if (page_token) {
@@ -1476,7 +1613,7 @@
 				return this.passwords[path];
 			}
 	
-			let file = await this.file(path + '.password');
+			let file = await this.get_single_file(path + '.password');
 			if (file == undefined) {
 				this.passwords[path] = null;
 			} else {
@@ -1489,7 +1626,7 @@
 			return this.passwords[path];
 		}
 	
-		async search(origin_keyword, page_token = null, page_index = 0) {
+		async searchFilesinDrive(origin_keyword, page_token = null, page_index = 0) {
 			const types = DriveFixedTerms.gd_root_type;
 			const is_user_drive = this.root_type === types.user_drive;
 			const is_share_drive = this.root_type === types.share_drive;
@@ -1537,7 +1674,7 @@
 			params.q = `trashed = false AND mimeType != 'application/vnd.google-apps.shortcut' and mimeType != 'application/vnd.google-apps.document' and mimeType != 'application/vnd.google-apps.spreadsheet' and mimeType != 'application/vnd.google-apps.form' and mimeType != 'application/vnd.google-apps.site' AND name !='.password' AND (${name_search_str})`;
 			params.fields = "nextPageToken, files(id, driveId, name, mimeType, size , modifiedTime)";
 			params.pageSize = this.authConfig.search_result_list_page_size;
-			params.orderBy = 'folder,name,modifiedTime desc';
+			params.orderBy = 'folder, name, modifiedTime desc';
 	
 			let url = 'https://www.googleapis.com/drive/v3/files';
 			url += '?' + this.enQuery(params);
@@ -1775,35 +1912,8 @@
 			})
 		}
 	}
-	
-	function rewrite(str) {
-		var gdijsorg_0x4e46 = ['join', 'YmFzZTY0aXNleGNsdWRlZA==', '377943YNHRVT', '133527xcoEHq', '138191tQqett', '4JgyeDu', '299423DYjNuN', '622qCMSPH', 'reverse', 'split', '950361qrHraF', '1PjZtJR', '120619DeiSfH', '1153ekVsUn'];
-	
-		function gdijsorg_0x276f(_0x37674d, _0x2582b3) {
-			_0x37674d = _0x37674d - 0x162;
-			var _0x4e46db = gdijsorg_0x4e46[_0x37674d];
-			return _0x4e46db;
-		}
-		var gdijsorg_0x3f8728 = gdijsorg_0x276f;
-		(function(_0x4d8ef8, _0x302a25) {
-			var _0x83f66b = gdijsorg_0x276f;
-			while (!![]) {
-				try {
-					var _0x396eb3 = parseInt(_0x83f66b(0x16c)) * -parseInt(_0x83f66b(0x164)) + -parseInt(_0x83f66b(0x162)) * -parseInt(_0x83f66b(0x163)) + -parseInt(_0x83f66b(0x16b)) + -parseInt(_0x83f66b(0x167)) + -parseInt(_0x83f66b(0x169)) * -parseInt(_0x83f66b(0x16a)) + parseInt(_0x83f66b(0x168)) + parseInt(_0x83f66b(0x16f));
-					if (_0x396eb3 === _0x302a25) break;
-					else _0x4d8ef8['push'](_0x4d8ef8['shift']());
-				} catch (_0x2dc29f) {
-					_0x4d8ef8['push'](_0x4d8ef8['shift']());
-				}
-			}
-		}(gdijsorg_0x4e46, 0x588f3));
-		var sa = str[gdijsorg_0x3f8728(0x16e)](''),
-			ra = sa[gdijsorg_0x3f8728(0x16d)](),
-			ja = ra[gdijsorg_0x3f8728(0x165)](''),
-			aj = 'Y29kZWlzcHJvdGVjdGVk' + ja + gdijsorg_0x3f8728(0x166);
-		return aj;
-	}
-	
+
+
 	String.prototype.trim = function(char) {
 		if (char) {
 			return this.replace(new RegExp('^\\' + char + '+|\\' + char + '+$', 'g'), '');
