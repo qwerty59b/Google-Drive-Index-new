@@ -8,7 +8,11 @@
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://www.npmjs.com/package/@googledrive/index)
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://gitlab.com/GoogleDriveIndex/Google-Drive-Index&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://www.npmjs.com/package/@googledrive/index)
 
-[![Donate](https://i.imgur.com/cekBwbW.png)](https://pages.razorpay.com/rapidleech)
+### Important Notice
+
+* Last Stable Version is 2.2.3
+* Project is being rewritten, try these files at your own risk.
+* Visit https://www.jsdelivr.com/package/npm/@googledrive/index for Last Stable Version
 
 ## Full White label and Customizable Index | One of a kind
 
