@@ -1,18 +1,6 @@
 	// add multiple serviceaccounts as {}, {}, {}, random account will be selected by each time app is opened.
 	const serviceaccounts = [
-		{
-			"type": "service_account",
-			"project_id": "gdi-js-org",
-			"private_key_id": "c70d2931fa042410856e9ed32c24cc51e07d68f1",
-			"private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDAOjZRPGYgya2T\nLE1+luR04ZKizb7JWEXw4swxFT0hbulLNzOpYY5dgkXp0SfVAgIaoSGCrcx96f92\nPDgnd1Whj2f7m7syW/ADZibA83GU/F4zjJlSMaVrp8sPh8YGckwYHRvnW12MCN/s\nkgB6/2QaqEDbDpYrmNgf7Bd9d9YCGERLKU7/wzkQbXTxgB7+K24BDoDwQT/yB0Bj\nK8hFKcoNUC5FcRfl7lOXGsLTskNy9lX3qofcmeV+IOv1ruzKeFzzKUAhSRyKpSvx\nz0pqMNyiJdZDGrokAVKPtmvFtEYSMNM7md1jfR2HQXd+fwPOx5lxR8J0isftnHgA\noEvACXupAgMBAAECggEAAMfdWFyR0B4gxriFd8DT/I8KR5lYRhmGDpjg0JRRrbdb\nx0IAdonGeGxns9ZIaBt+Dj7IPW9oa+L/SWSsRQNdfUtd/JLY31CdBt1OrAll4gX/\n4AvF3b34OjNhyV/i0gjup7yEVF7ypqRsr2ZQGu/H9IbckF8zHpbcQUEi2JZvFhrv\nRc/UHGe+lIo77nD2R5ET9EA2kgaW+XPSkaVRLo9kI+Gu8Y/84yiJos2pDz+JcTab\naU2gNKYASy7zyycodJwZ+fIEy2BFPYdAPAJiaqr0eSqLQPVORzRJOnY644de7389\n6RIXT6QgRpXMq8UHVqfb8Gvs2eiuaB81A2HfnAQkgQKBgQDmxanqUlYjGv86oEhe\n0xI1E6q0YcmWAi3fYKh4djeXMA8jOYRKh7m0eUc4pHUQX6oh2NZzvbUqjA7qe1r4\n3X3OjgjMx7Off92TJVMAceSkgaMbke4E75w5a32BhecNz0kHGzrH5yW5TJDwMvcl\n4jskzYpo6dftbwHX0o2b8E+AKQKBgQDVPdgknWhKdmP9ByS8UVJhONMIH/99dmFO\nF+baTTRqoBAKZsIfrOcVhPrjTwFKTVE6rLPNdIJAkyWsETqHow9LuR5L38j5wt8Z\nmCvDdrnetbaS32Dx+qacmAkpktFE/NaGvxxUkjXC57A1xC9/AxSZfnsukNjHyPW4\nTn9gBKuPgQKBgQCa4dT9aE9ZdlgQL90Cj2Tr7IwoTm0uWb4R6tyHJMiAlwfB22t3\nXgp8Ht13HaFX4OzdlJuxyIQbzy5/n1TaLEWwaNFtJybeCMJcbLN9W/NZmYwwB8wY\n0fwm6YatdIIzWYio1VSpL/C4obOxEnOfoGuTcsPPUArU1ykEgdL68tlYqQKBgEEv\nkJ1QyQrKOjKlNmOi8G3r8wbu0SlHQOOght+A7l8R4xVq6DjKoDGB3zgRdLGEBSrM\nlIJf9VlMIh4BfkTsYcaiJlLHbCZ9nbmzPN2Zs6QTJGathnMyTjBcgaCF0xclu2ah\nkUWBFJIqRUGKYYKQLIHnmjxX5wzbr9HRnTp68v8BAoGALPYf+O8m5AdzO3A02R8c\n5G2Gt6s/+90NKfVqN0hJ56p4h18gqZjMIiFxe+8mE/t4XYUeTgeW5510JeSvtmQb\nstb2+RG6Z3ZM73Noi7OgF50IhisdEJgAR3dfFvdAW3LWXE99fJwmDXLIlGJOEYTA\nYyJP08C4LiBwCKdBfEzLlmM=\n-----END PRIVATE KEY-----\n",
-			"client_email": "test-sa@gdi-js-org.iam.gserviceaccount.com",
-			"client_id": "113448625813676440808",
-			"auth_uri": "https://accounts.google.com/o/oauth2/auth",
-			"token_uri": "https://oauth2.googleapis.com/token",
-			"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-			"client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test-sa%40gdi-js-org.iam.gserviceaccount.com",
-			"universe_domain": "googleapis.com"
-		  }
+	{}
 	];
 	const randomserviceaccount = serviceaccounts[Math.floor(Math.random()*serviceaccounts.length)]; // DO NOT TOUCH THIS
 	const domains_for_dl = ['']; // add multiple cloudflare addresses to balance the load on download/stream servers, eg. ['https://testing.fetchgoogleapi.workers.dev', 'https://testing2.fetchgoogleapi2.workers.dev']
@@ -26,7 +14,7 @@
 		"client_id": "", // Client id from Google Cloud Console
 		"client_secret": "", // Client Secret from Google Cloud Console
 		"refresh_token": "", // Authorize token
-		"service_account": true, // true if you're using Service Account instead of user account
+		"service_account": false, // true if you're using Service Account instead of user account
 		"service_account_json": randomserviceaccount, // don't touch this one
 		"files_list_page_size": 50,
 		"search_result_list_page_size": 50,
@@ -36,7 +24,6 @@
 		"lock_folders": false, // keeps folders and search locked if auth in on, and allows individual file view
 		"enable_auth0_com": false, // follow guide to add auth0.com to secure index with powerful login based system
 		"enable_login": true, // set to true if you want to add login system
-		"login_days" : 7, // days to keep logged in
 		"users_list": [
 			{
 				"username": "admin",
@@ -49,13 +36,13 @@
 		],
 		"roots":[
 		  {
-			  "id": "0APTJQGSDLteeUk9PVA",
+			  "id": "root",
 			  "name": "Drive One",
 			  "protect_file_link": false,
 			 // "auth": {"username":"password"} /* Remove double slash before "auth" to activate id password protection */
 		  },
 		  {
-			  "id": "1sUfltWLHbViWCxwMEtpwI0Uk9kHKZ1Fo",
+			  "id": "root",
 			  "name": "Drive Two",
 			  "protect_file_link": false,
 			 // "auth": {"username":"password", "username1":"password1"} /* Remove double slash before "auth" to activate id password protection */
@@ -163,7 +150,7 @@
 	  <link rel="stylesheet" href="https://cdn.plyr.io/${uiConfig.plyr_io_version}/plyr.css" />
 	  <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.0.0/dist/${uiConfig.theme}/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 	  <style>a{color:${uiConfig.css_a_tag_color};}p{color:${uiConfig.css_p_tag_color};}</style>
-	  <script src="http://127.0.0.1:5500/src/app.js"></script>
+	  <script src="${uiConfig.jsdelivr_cdn_src}@${uiConfig.version}/js/app.obf.js"></script>
 	  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.12.313/build/pdf.min.js"></script>
 	  <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
 	</head>
@@ -288,28 +275,18 @@
 		  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 		  <script>
 			 $(document).ready(function(){
-				$("#btn-login").click(function() {
-					const formData = new URLSearchParams();
-					formData.append('username', $("#email").val());
-					formData.append('password', $("#password").val());
-				  
+				$("#btn-login").click(function(){
 					fetch('/login', {
-					  method: 'POST',
-					  headers: {
-						'Content-Type': 'application/x-www-form-urlencoded'
-					  },
-					  body: formData.toString()
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded'
+						},
+						body: JSON.stringify({
+							email: $("#email").val(),
+							password: $("#password").val()
+						}),
 					})
-					  .then(res => res.json())
-					  .then(data => {
-						if (!data.ok) {
-						  document.getElementById("error-message").style.display = "block";
-						  document.getElementById("error-message").innerHTML = "Invalid Credentials";
-						} else {
-						  window.location.href = "/";
-						}
-					  });
-				  });				  
+				});
 			 });
 		  </script>
 	   </head>
@@ -843,8 +820,25 @@
 	//end auth0.com function
 	
 	// web crypto functions
+	async function WebCryptoCall(encryptedString, iv) {
+		const key = await crypto.subtle.importKey(
+		  "raw",
+		  new TextEncoder().encode(crypto_base_key),
+		  "AES-CBC",
+		  false,
+		  ["encrypt", "decrypt"]
+		);
+		const encryptedBytes = Uint8Array.from(atob(encryptedString), (char) => char.charCodeAt(0));
+		const decryptedData = await crypto.subtle.decrypt(
+		  { name: "AES-CBC", iv },
+		  key,
+		  encryptedBytes
+		);
+		const decryptedString = new TextDecoder().decode(decryptedData);
+		return decryptedString;
+	}
 
-	async function encryptString(string, iv) {
+	async function encryptString(string) {
 		const key = await crypto.subtle.importKey(
 		  "raw",
 		  new TextEncoder().encode(crypto_base_key),
@@ -852,27 +846,30 @@
 		  false,
 		  ["encrypt"]
 		);
-		const encodedId = new TextEncoder().encode(string);
+		const iv = crypto.getRandomValues(new Uint8Array(16));
 		const encryptedData = await crypto.subtle.encrypt(
-		  { name: "AES-CBC", iv },
+		  { name: "AES-CBC", encrypt_iv },
 		  key,
-		  encodedId
+		  new TextEncoder().encode(string)
 		);
-		const encryptedString = btoa(Array.from(new Uint8Array(encryptedData), (byte) => String.fromCharCode(byte)).join(""));
+		const encryptedBytes = new Uint8Array(encryptedData);
+		const encryptedString = btoa(
+		  encryptedBytes.reduce((str, byte) => str + String.fromCharCode(byte), "")
+		);
 		return encryptedString;
 	}
 
-	async function decryptString(encryptedString, iv) {
+	async function decryptString(encryptedString) {
 		const key = await crypto.subtle.importKey(
 		  "raw",
-		  new TextEncoder().encode(crypto_base_key	),
+		  new TextEncoder().encode(crypto_base_key),
 		  "AES-CBC",
 		  false,
 		  ["decrypt"]
 		);
 		const encryptedBytes = Uint8Array.from(atob(encryptedString), (char) => char.charCodeAt(0));
 		const decryptedData = await crypto.subtle.decrypt(
-		  { name: "AES-CBC", iv },
+		  { name: "AES-CBC", encrypt_iv },
 		  key,
 		  encryptedBytes
 		);
@@ -884,15 +881,6 @@
 		event.respondWith(handleRequest(event.request, event));
 	});
 	
-	function login() {
-		return new Response(login_html, {
-			status: 200,
-			headers: {
-				'Content-Type': 'text/html; charset=utf-8'
-			}
-		});
-	}
-
 	async function handleRequest(request, event) {
 		//var loginCheck = await loginHandleRequest(event)
 		//if(authConfig['enable_auth0_com'] && loginCheck != null){return loginCheck}
@@ -909,32 +897,32 @@
 				const cookie = request.headers.get('cookie');
 				if (cookie && cookie.includes('session=')) {
 					const session = cookie.split('session=').pop().split(';').shift().trim();
-					if (session == 'null' || session == '' || session == null) {
-						return login()
-					}
-					const decryptedSession = await decryptString(session, encrypt_iv);
+					const decryptedSession = await decryptString(session);
 					const current_time = Date.now(); // this results in a timestamp of the number of milliseconds since epoch.
 					const username = decryptedSession.split('|')[0];
 					const password = decryptedSession.split('|')[1];
 					const session_time = decryptedSession.split('|')[2];
-					const usersMap = {};
+					let isUserFound = false;
 					if (session_time < current_time) {
 						let response = new Response('Session Expired!', {
 							headers: {
-								'Set-Cookie': `session=; HttpOnly; Secure; SameSite=Lax;`,
+								'Set-Cookie': `session=; path=/; HttpOnly; Secure; SameSite=Lax`
 							}
 						});
 						response.headers.set("Refresh", "1; url=/");
 						return response;
 					}
 					for (const user of authConfig.users_list) {
-						usersMap[user.username] = username;
-						console.log(user.username, username)
-					  }
-					if (usersMap[username] === password) {
-						console.log("Logged In")
-					} else {
+						if (user.username === username && user.password === password) {
+						  isUserFound = true;
+						  break;
+						}
+					}
+					if (!isUserFound) {
 						let response = new Response('Invalid User!', {
+							headers: {
+								'Set-Cookie': `session=; path=/; HttpOnly; Secure; SameSite=Lax`
+							}
 						});
 						response.headers.set("Refresh", "1; url=/");
 						return response;
@@ -952,16 +940,18 @@
 				const formdata = await request.formData();
 				const username = formdata.get('username');
 				const password = formdata.get('password');
-				const usersMap = {};
+				let isUserFound = false;
 				for (const user of authConfig.users_list) {
-				  usersMap[user.username] = username;
-				  console.log(user.username, username)
+					if (user.username === username && user.password === password) {
+					  isUserFound = true;
+					  break;
+					}
 				}
-				if (usersMap[username] === password) {
+				if (isUserFound) {
 					const current_time = Date.now(); // this results in a timestamp of the number of milliseconds since epoch.
-					const session_time = current_time + 86400000 * authConfig.login_days;
+					const session_time = current_time + 86400000 * 7; // expires in 7 days
 					const session = `${username}|${password}|${session_time}`;
-					const encryptedSession = await encryptString(session, encrypt_iv);
+					const encryptedSession = await encryptString(session);
 					const jsonResponse = {
 						ok: true,
 					}
@@ -974,7 +964,6 @@
 							'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
 						}
 					});
-					return response;
 				} else {
 					const jsonResponse = {
 						ok: false,
@@ -987,7 +976,6 @@
 							'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
 						}
 					});
-					return response;
 				}
 			}
 		}
