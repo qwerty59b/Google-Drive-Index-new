@@ -8,7 +8,11 @@
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://www.npmjs.com/package/@googledrive/index)
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://gitlab.com/GoogleDriveIndex/Google-Drive-Index&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://www.npmjs.com/package/@googledrive/index)
 
-[![Donate](https://i.imgur.com/cekBwbW.png)](https://pages.razorpay.com/rapidleech)
+### Important Notice
+
+* Last Stable Version is 2.2.3
+* Project is being rewritten, try these files at your own risk.
+* Visit https://www.jsdelivr.com/package/npm/@googledrive/index for Last Stable Version
 
 ## Full White label and Customizable Index | One of a kind
 
@@ -19,9 +23,9 @@
 
 * [Getting-Started-with-Google-Drive-Index](https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/wikis/Getting-Started-with-Google-Drive-Index)
 
-[![Screenshot](https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/raw/master/images/themes/vapor.png)](https://youtu.be/Ihk4Gm3DPvg)
+[![Screenshot](https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.3/images/themes/vapor.png)](https://youtu.be/Ihk4Gm3DPvg)
 
-[![Screenshot](https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/raw/master/images/themes/darkly.png)](https://youtu.be/Ihk4Gm3DPvg)
+[![Screenshot](https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.3/images/themes/darkly.png)](https://youtu.be/Ihk4Gm3DPvg)
 
 
 ## How to
@@ -262,9 +266,9 @@
 
 <a href="https://www.browserstack.com"><img src="https://i.imgur.com/UMYceGo.png" alt="BrowserStack" width="300" /></a>
 
-<a href="https://tutanota.com"><img src="https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/raw/master/images/tutanota-logo-red-black-font.webp" alt="Tutanato" width="300" /></a>
+<a href="https://tutanota.com"><img src="https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.3/images/tutanota-logo-red-black-font.webp" alt="Tutanato" width="300" /></a>
 
-<a href="https://1password.com"><img src="https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/raw/master/images/1password.png" alt="1Password" width="300" /></a>
+<a href="https://1password.com"><img src="https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.3/images/1password.png" alt="1Password" width="300" /></a>
 
 ## Support this Project
 
