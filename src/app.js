@@ -191,66 +191,59 @@ function sleep(milliseconds) {
  * @param resultCallback Success Result Callback
  * @param authErrorCallback Pass Error Callback
  */
-function requestListPath(path, params, resultCallback, authErrorCallback) {
-    var p = {
-        password: params['password'] || null,
-        page_token: params['page_token'] || null,
-        page_index: params['page_index'] || 0
+function requestListPath(path, params, resultCallback, authErrorCallback, retries = 3) {
+    var requestData = {
+      password: params['password'] || '',
+      page_token: params['page_token'] || '',
+      page_index: params['page_index'] || 0
     };
-    $('#update').html(`<div class='alert alert-info' role='alert'> Connecting...</div></div></div>`);
-    $.post(path, p, function(data, status) {
-        var res = jQuery.parseJSON(data);
-        if (res && res.error && res.error.code == '401') {
+    $('#update').show();
+    document.getElementById('update').innerHTML = `<div class='alert alert-info' role='alert'> Connecting...</div></div></div>`;
+  
+    function performRequest() {
+      fetch(path, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+      })
+        .then(function(response) {
+          if (!response.ok) {
+            throw new Error('Request failed');
+          }
+          return response.json();
+        })
+        .then(function(res) {
+          if (res && res.error && res.error.code === '401') {
             // Password verification failed
-            if (authErrorCallback) authErrorCallback(path)
-        } else if (res && res.data === null) {
-            $('#spinner').remove();
-            $('#list').html(`<div class='alert alert-danger' role='alert'> Server didn't sent any data. </div></div></div>`);
-            $('#update').remove();
-        } else if (res && res.data) {
-            if (resultCallback) resultCallback(res, path, p)
-            $('#update').remove();
-        }
-    }).fail(function(response) {
-        sleep(2000);
-        $('#update').html(`<div class='alert alert-info' role='alert'> Retrying...</div></div></div>`);
-        $.post(path, p, function(data, status) {
-            var res = jQuery.parseJSON(data);
-            if (res && res.error && res.error.code == '401') {
-                // Password verification failed
-                if (authErrorCallback) authErrorCallback(path)
-            } else if (res && res.data === null) {
-                $('#spinner').remove();
-                $('#list').html(`<div class='alert alert-danger' role='alert'> Server didn't sent any data. </div></div></div>`);
-                $('#update').remove();
-            } else if (res && res.data) {
-                if (resultCallback) resultCallback(res, path, p)
-                $('#update').remove();
-            }
-        }).fail(function(response) {
+            if (authErrorCallback) authErrorCallback(path);
+          } else if (res && res.data === null) {
+            document.getElementById('spinner').remove();
+            document.getElementById('list').innerHTML = `<div class='alert alert-danger' role='alert'> Server didn't send any data.</div></div></div>`;
+            $('#update').hide();
+          } else if (res && res.data) {
+            if (resultCallback) resultCallback(res, path, requestData);
+            $('#update').hide();
+          }
+        })
+        .catch(function(error) {
+          if (retries > 0) {
             sleep(2000);
-            $('#update').html(`<div class='alert alert-info' role='alert'> Retrying...</div></div></div>`);
-            $.post(path, p, function(data, status) {
-                var res = jQuery.parseJSON(data);
-                if (res && res.error && res.error.code == '401') {
-                    // Password verification failed
-                    if (authErrorCallback) authErrorCallback(path)
-                } else if (res && res.data === null) {
-                    $('#spinner').remove();
-                    $('#list').html(`<div class='alert alert-danger' role='alert'> Server didn't sent any data. </div></div></div>`);
-                    $('#update').remove();
-                } else if (res && res.data) {
-                    if (resultCallback) resultCallback(res, path, p)
-                    $('#update').remove();
-                }
-            }).fail(function(response) {
-                $('#update').html(`<div class='alert alert-danger' role='alert'> Unable to get data from the server, Something went wrong.</div></div></div>`);
-                $('#list').html(`<div class='alert alert-danger' role='alert'> We were unable to get data from the server.</div></div></div>`);
-                $('#spinner').remove();
-            });
+            document.getElementById('update').innerHTML = `<div class='alert alert-info' role='alert'> Retrying...</div></div></div>`;
+            performRequest(path, requestData, resultCallback, authErrorCallback, retries - 1);
+          } else {
+            document.getElementById('update').innerHTML = `<div class='alert alert-danger' role='alert'> Unable to get data from the server. Something went wrong.</div></div></div>`;
+            document.getElementById('list').innerHTML = `<div class='alert alert-danger' role='alert'> We were unable to get data from the server.</div></div></div>`;
+            $('#update').hide();
+          }
         });
-    });
-}
+    }
+  
+    performRequest();
+  }
+  
+  
 
 
 /**
@@ -258,60 +251,55 @@ function requestListPath(path, params, resultCallback, authErrorCallback) {
  * @param params Form params
  * @param resultCallback Success callback
  */
-function requestSearch(params, resultCallback) {
+function requestSearch(params, resultCallback, retries = 3) {
     var p = {
-        q: params['q'] || null,
-        page_token: params['page_token'] || null,
-        page_index: params['page_index'] || 0
+      q: params['q'] || null,
+      page_token: params['page_token'] || null,
+      page_index: params['page_index'] || 0
     };
-    $('#update').html(`<div class='alert alert-info' role='alert'> Connecting...</div></div></div>`);
-    $.post(`/${window.current_drive_order}:search`, p, function(data, status) {
-        var res = jQuery.parseJSON(data);
-        if (res && res.data === null) {
+  
+    function performRequest(retries) {
+      fetch(`/${window.current_drive_order}:search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(p)
+      })
+        .then(function(response) {
+          if (!response.ok) {
+            throw new Error('Request failed');
+          }
+          return response.json();
+        })
+        .then(function(res) {
+          if (res && res.data === null) {
             $('#spinner').remove();
-            $('#list').html(`<div class='alert alert-danger' role='alert'> Server didn't sent any data.</div></div></div>`);
+            $('#list').html(`<div class='alert alert-danger' role='alert'> Server didn't send any data.</div></div></div>`);
             $('#update').remove();
-        }
-        if (res && res.data) {
-            if (resultCallback) resultCallback(res, p)
+          }
+          if (res && res.data) {
+            if (resultCallback) resultCallback(res, p);
             $('#update').remove();
-        }
-    }).fail(function(response) {
-        sleep(2000);
-        $('#update').html(`<div class='alert alert-info' role='alert'> Retrying...</div></div></div>`);
-        $.post(`/${window.current_drive_order}:search`, p, function(data, status) {
-            var res = jQuery.parseJSON(data);
-            if (res && res.data === null) {
-                $('#spinner').remove();
-                $('#list').html(`<div class='alert alert-danger' role='alert'> Server didn't sent any data. </div></div></div>`);
-                $('#update').remove();
-            }
-            if (res && res.data) {
-                if (resultCallback) resultCallback(res, p)
-                $('#update').remove();
-            }
-        }).fail(function(response) {
+          }
+        })
+        .catch(function(error) {
+          if (retries > 0) {
             sleep(2000);
             $('#update').html(`<div class='alert alert-info' role='alert'> Retrying...</div></div></div>`);
-            $.post(`/${window.current_drive_order}:search`, p, function(data, status) {
-                var res = jQuery.parseJSON(data);
-                if (res && res.data === null) {
-                    $('#spinner').remove();
-                    $('#list').html(`<div class='alert alert-danger' role='alert'> Server didn't sent any data. </div></div></div>`);
-                    $('#update').remove();
-                }
-                if (res && res.data) {
-                    if (resultCallback) resultCallback(res, p)
-                    $('#update').remove();
-                }
-            }).fail(function(response) {
-                $('#update').html(`<div class='alert alert-danger' role='alert'> Unable to get data from the server, Something went wrong. 3 Failures</div></div></div>`);
-                $('#list').html(`<div class='alert alert-danger' role='alert'> We were unable to get data from the server.</div></div></div>`);
-                $('#spinner').remove();
-            });
+            performRequest(retries - 1);
+          } else {
+            $('#update').html(`<div class='alert alert-danger' role='alert'> Unable to get data from the server. Something went wrong. 3 Failures</div></div></div>`);
+            $('#list').html(`<div class='alert alert-danger' role='alert'> We were unable to get data from the server.</div></div></div>`);
+            $('#spinner').remove();
+          }
         });
-    });
-}
+    }
+  
+    $('#update').html(`<div class='alert alert-info' role='alert'> Connecting...</div></div></div>`);
+    performRequest(retries);
+  }
+  
 
 // Render file list
 function list(path) {
@@ -764,15 +752,15 @@ function onSearchResultItemClick(a_ele) {
         }
       })
       .then(function(obj) {
-        var href = `${obj.path}${can_preview ? '' : ''}`;
+        var href = `${obj.path}`;
         if (href.endsWith("/")) {
-          var ehrefurl = href.replace(new RegExp('#', 'g'), '%23').replace(new RegExp('\\?', 'g'), '%3F');
+          var encodedUrl = href.replace(/#/g, '%23').replace(/\?/g, '%3F');
         } else {
-          var ehrefurl = href.replace(new RegExp('#', 'g'), '%23').replace(new RegExp('\\?', 'g'), '%3F') + '';
+          var encodedUrl = href.replace(/#/g, '%23').replace(/\?/g, '%3F') + '';
         }
         title = `Result`;
         $('#SearchModelLabel').html(title);
-        content = `<a class="btn btn-info" href="${ehrefurl}">Open</a> <a class="btn btn-secondary" href="${ehrefurl}" target="_blank">Open in New Tab</a>`;
+        content = `<a class="btn btn-info" href="${encodedUrl}${can_preview ? '?a=view' : ''}">Open</a> <a class="btn btn-secondary" href="${encodedUrl}${can_preview ? '?a=view' : ''}" target="_blank">Open in New Tab</a>`;
         $('#modal-body-space').html(content);
       })
       .catch(function(error) {
@@ -802,304 +790,246 @@ function get_file(path, file, callback) {
 // File display ?a=view
 function file(path) {
     var name = path.split('/').pop();
-    var ext = name.split('.').pop().toLowerCase().replace(`?a=view`, "").toLowerCase();
+    var ext = name.split('.').pop().toLowerCase().replace(`?a=view`, "");
     $('#content').html(`<div class="d-flex justify-content-center" style="height: 150px"><div class="spinner-border ${UI.loading_spinner_class} m-5" role="status" id="spinner"><span class="sr-only"></span></div></div>`);
-    if ("|html|php|css|go|java|js|json|txt|sh|md|".indexOf(`|${ext}|`) >= 0) {
-        return file_code(path);
-    }
+    fetch("", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ path: path }),
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Request failed");
+        }
+        return response.json();
+      })
+      .then(function (obj) {
+        var mimeType = obj.mimeType;
+        var fileExtension =  obj.fileExtension
+        if (mimeType === "application/vnd.google-apps.folder") {
+            window.location.href = window.location.pathname + "/";
+        } else if (fileExtension) {
+          const name = obj.name;
+          const encoded_name = encodeURIComponent(name);
+          const size = formatFileSize(obj.size);
+          const url = UI.second_domain_for_dl
+          ? UI.downloaddomain + obj.link
+          : window.location.origin + obj.link;
+          if (mimeType.includes("video")) {
+            const poster = obj.thumbnailLink.replace("s220", "s0");
+            file_video(name, encoded_name, size, poster, url);
+          }
+        }
+      })
+      .catch(function (error) {
+        var content = `
+          <div class="container"><br>
+          <div class="card text-center">
+            <div class="card-body text-center">
+              <div class="${UI.file_view_alert_class}" id="file_details" role="alert"><b>404.</b> That’s an error. `+error+`</div>
+            </div>
+            <p>The requested URL was not found on this server. That’s all we know.</p>
+            <div class="card-text text-center">
+              <div class="btn-group text-center">
+                <a href="/" type="button" class="btn btn-primary">Homepage</a>
+              </div>
+            </div><br>
+          </div>
+        </div>`;
+        $("#content").html(content);
+      });
 
-    if ("|mp4|webm|avi|".indexOf(`|${ext}|`) >= 0) {
-        return file_video(path);
-    }
 
-    if ("|mpg|mpeg|mkv|rm|rmvb|mov|wmv|asf|ts|flv|".indexOf(`|${ext}|`) >= 0) {
-        return file_video(path);
-    }
 
-    if ("|mp3|flac|wav|ogg|m4a|aac|".indexOf(`|${ext}|`) >= 0) {
-        return file_audio(path);
-    }
-
-    if ("|bmp|jpg|jpeg|png|gif|".indexOf(`|${ext}|`) >= 0) {
-        return file_image(path);
-    }
-
-    if ('pdf' === ext) {
-        return file_pdf(path);
-    } else {
-        return file_others(path);
-    }
+    /*switch (ext) {
+      case "html": case "php": case "css": case "go": case "java": case "js": case "json": case "txt": case "sh": case "md":
+        file_others(path);
+        break;
+      case "mp4": case "webm": case "avi": case "mpg": case "mpeg": case "mkv": case "rm": case "rmvb": case "mov": case "wmv": case "asf": case "ts": case "flv":
+        file_video(path);
+        break;
+      case "mp3": case "flac": case "wav": case "ogg": case "m4a": case "aac":
+        file_audio(path);
+        break;
+      case "bmp": case "jpg": case "jpeg": case "png": case "gif":
+        file_image(path);
+        break;
+      case "pdf":
+        file_pdf(path);
+        break;
+      default:
+        file_others(path);
+        break;
+    }*/
 }
+  
 
 // Document display |zip|.exe/others direct downloads
 function file_others(path) {
     var type = {
-        "zip": "zip",
-        "exe": "exe",
-        "rar": "rar",
-    };
-    var name = path.split('/').pop();
-    var decodename = unescape(name);
-    var ext = name.split('.').pop().toLowerCase();
-    var path = path;
-    var url = UI.second_domain_for_dl ? UI.downloaddomain + path : window.location.origin + path;
-    $.post("",
-        function(data) {
-            try {
-                var obj = jQuery.parseJSON(data);
-                var size = formatFileSize(obj.size);
-                var mimeType = obj.mimeType;
-                if (mimeType == "application/vnd.google-apps.folder") {
-                    var content = `
-                  <div class="container"><br>
-                  <div class="card text-center">
-                  <div class="card-body text-center">
-                  <div class="${UI.file_view_alert_class}" id="file_details" role="alert"><b>${obj.name}</b> is a folder.</div>
-                  </div><p>The Requested Link contains a folder not a file.</p>
-                  <div class="card-text text-center">
-                  <div class="btn-group text-center">
-                  <a href="` + window.location.pathname + `/" type="button" class="btn btn-primary">Open as Folder</a>
-                  </div>
-                  </div><br>
-                  </div>
-                  </div>`;
-                } else {
-                    var content = `
-<div class="container"><br>
-<div class="card text-center">
-<div class="card-body text-center">
-  <div class="${UI.file_view_alert_class}" id="file_details" role="alert">${obj.name}<br>${size}</div>
-</div>
-<div class="card-body">
-<div class="input-group mb-4">
-  <div class="input-group-prepend">
-    <span class="input-group-text" id="">Full URL</span>
-  </div>
-  <input type="text" class="form-control" id="dlurl" value="${url}">
-</div>
-  <div class="card-text text-center">
-  ${UI.display_drive_link ? '<a type="button" class="btn btn-info" href="https://drive.google.com/file/d/'+ obj.id +'/view" id ="file_drive_link" target="_blank">GD Link</a>': ''}
-  <div class="btn-group text-center">
-      <a href="${url}" type="button" class="btn btn-primary">Download</a>
-      <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <span class="sr-only"></span>
-      </button>
-      <div class="dropdown-menu">
-        <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager/idm.internet.download.manager.Downloader;S.title=${decodename};end">1DM (Free)</a>
-        <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.adm.lite/idm.internet.download.manager.Downloader;S.title=${decodename};end">1DM (Lite)</a>
-        <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.plus/idm.internet.download.manager.Downloader;S.title=${decodename};end">1DM+ (Plus)</a>
-      </div>
-  </div>
-  <button onclick="copyFunction()" onmouseout="outFunc()" class="btn btn-success"> <span class="tooltiptext" id="myTooltip">Copy</span> </button>
-  </div>
-  <br></div>`;
-                }
-            } catch (err) {
-                var content = `
-<div class="container"><br>
-<div class="card text-center">
-    <div class="card-body text-center">
-      <div class="${UI.file_view_alert_class}" id="file_details" role="alert"><b>404.</b> That’s an error.</div>
-    </div><p>The requested URL was not found on this server. That’s all we know.</p>
-      <div class="card-text text-center">
-      <div class="btn-group text-center">
-        <a href="/" type="button" class="btn btn-primary">Homepage</a>
-      </div>
-        </div><br>
-</div>
-</div>`
-            }
-            $('#content').html(content);
-        });
-}
-
-// Document display |html|php|css|go|java|js|json|txt|sh|md|
-function file_code(path) {
-    var type = {
-        "html": "html",
-        "php": "php",
-        "css": "css",
-        "go": "golang",
-        "java": "java",
-        "js": "javascript",
-        "json": "json",
-        "txt": "Text",
-        "sh": "sh",
-        "md": "Markdown",
-    };
-    var name = path.split('/').pop();
-    var decodename = unescape(name);
-    var ext = name.split('.').pop().toLowerCase();
-    var path = path;
-    var url = UI.second_domain_for_dl ? UI.downloaddomain + path : window.location.origin + path;
-    $.post("",
-        function(data) {
-            try {
-                var obj = jQuery.parseJSON(data);
-                console.log(obj);
-                var size = formatFileSize(obj.size);
-                var content = `
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/themes/prism-twilight.css" integrity="sha256-Rl83wx+fN2p2ioYpdvpWxuhAbxj+/7IwaZrKQBu/KQE=" crossorigin="anonymous">
-<div class="container"><br>
-<div class="card text-center">
-<div class="card-body text-center">
-  <div class="${UI.file_view_alert_class}" id="file_details" role="alert">${obj.name}<br>${size}</div>
-<div>
-<pre ${UI.second_domain_for_dl ? 'style="display:none;"': 'style="display:block;"'} class="line-numbers language-markup" data-src="plugins/line-numbers/index.html" data-start="-5" style="white-space: pre-wrap; counter-reset: linenumber -6;" data-src-status="loaded" tabindex="0"><code id="editor"></code></pre>
-</div>
-</div>
-<div class="card-body">
-<div class="input-group mb-4">
-  <div class="input-group-prepend">
-    <span class="input-group-text" id="">Full URL</span>
-  </div>
-  <input type="text" class="form-control" id="dlurl" value="${url}">
-</div>
-  <div class="card-text text-center">
-  ${UI.display_drive_link ? '<a type="button" class="btn btn-info" href="https://drive.google.com/file/d/'+ obj.id +'/view" id ="file_drive_link" target="_blank">GD Link</a>': ''}
-  <div class="btn-group text-center">
-      <a href="${url}" type="button" class="btn btn-primary">Download</a>
-      <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <span class="sr-only"></span>
-      </button>
-      <div class="dropdown-menu">
-        <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager/idm.internet.download.manager.Downloader;S.title=${decodename};end">1DM (Free)</a>
-        <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.adm.lite/idm.internet.download.manager.Downloader;S.title=${decodename};end">1DM (Lite)</a>
-        <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.plus/idm.internet.download.manager.Downloader;S.title=${decodename};end">1DM+ (Plus)</a>
-      </div>
-  </div>
-  <button onclick="copyFunction()" onmouseout="outFunc()" class="btn btn-success"> <span class="tooltiptext" id="myTooltip">Copy</span> </button></div><br></div>
-<script src="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/prism.js" integrity="sha256-fZOd7N/oofoKcO92RzxvC0wMm+EvsKyRT4nmcmQbgzU=" crossorigin="anonymous"></script>
-`;
-            } catch (err) {
-                var content = `
-<div class="container"><br>
-<div class="card text-center">
-    <div class="card-body text-center">
-      <div class="${UI.file_view_alert_class}" id="file_details" role="alert"><b>404.</b> That’s an error.</div>
-    </div><p>The requested URL was not found on this server. That’s all we know.</p>
-      <div class="card-text text-center">
-      <div class="btn-group text-center">
-        <a href="/" type="button" class="btn btn-primary">Homepage</a>
-      </div>
-        </div><br>
-</div>
-</div>`
-            }
-            $('#content').html(content);
-        });
-
-    $.get(path, function(data) {
-        $('#editor').html($('<div/><div/><div/>').text(data).html());
-        var code_type = "Text";
-        if (type[ext] != undefined) {
-            code_type = type[ext];
+      zip: "zip",
+      exe: "exe",
+      rar: "rar",
+      "html": "html",
+      "php": "php",
+      "css": "css",
+      "go": "golang",
+      "java": "java",
+      "js": "javascript",
+      "json": "json",
+      "txt": "Text",
+      "sh": "sh",
+      "md": "Markdown",
+    };  
+    fetch("", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ path: path }),
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Request failed");
         }
-    });
+        return response.json();
+      })
+      .then(function (obj) {
+        var mimeType = obj.mimeType;
+  
+        if (mimeType === "application/vnd.google-apps.folder") {
+            window.location.href = window.location.pathname + "/";
+        } else {
+          var size = formatFileSize(obj.size);
+          var url = UI.second_domain_for_dl
+          ? UI.downloaddomain + obj.link
+          : window.location.origin + obj.link;
+          var encoded_name = encodeURIComponent(obj.name);
+          var content = `
+            <div class="container"><br>
+            <div class="card text-center">
+            <div class="card-body text-center">
+              <div class="${UI.file_view_alert_class}" id="file_details" role="alert">${obj.name}<br>${size}</div>
+            </div>
+            <div class="card-body">
+            <div class="input-group mb-4">
+              <input type="text" class="form-control" id="dlurl" value="${url}" readonly>
+            </div>
+            <div class="card-text text-center">
+            <div class="btn-group text-center">
+                <a href="${url}" type="button" class="btn btn-primary">Download</a>
+                <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <span class="sr-only"></span>
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager/idm.internet.download.manager.Downloader;S.title=${encoded_name};end">1DM (Free)</a>
+                  <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.adm.lite/idm.internet.download.manager.Downloader;S.title=${encoded_name};end">1DM (Lite)</a>
+                  <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.plus/idm.internet.download.manager.Downloader;S.title=${encoded_name};end">1DM+ (Plus)</a>
+                </div>
+            </div>
+            <button onclick="copyFunction()" onmouseout="outFunc()" class="btn btn-success"> <span class="tooltiptext" id="myTooltip">Copy</span> </button>
+            </div>
+            <br></div>`;
+        }
+  
+        $("#content").html(content);
+      })
+      .catch(function (error) {
+        var content = `
+          <div class="container"><br>
+          <div class="card text-center">
+            <div class="card-body text-center">
+              <div class="${UI.file_view_alert_class}" id="file_details" role="alert"><b>404.</b> That’s an error.</div>
+            </div>
+            <p>The requested URL was not found on this server. That’s all we know.</p>
+            <div class="card-text text-center">
+              <div class="btn-group text-center">
+                <a href="/" type="button" class="btn btn-primary">Homepage</a>
+              </div>
+            </div><br>
+          </div>
+        </div>`;
+        $("#content").html(content);
+      });
 }
 
 // Document display video |mp4|webm|avi|
-function file_video(path) {
-    var name = path.split('/').pop();
-    var decodename = unescape(name);
-    var caption = name.slice(0, name.lastIndexOf('.'))
-    var path = path;
-    var url = UI.second_domain_for_dl ? UI.videodomain + path : window.location.origin + path;
-    var urlvlc = url.replace(new RegExp('\\[', 'g'), '%5B').replace(new RegExp('\\]', 'g'), '%5D').replace(new RegExp('\\!', 'g'), '%25');
-    var url_without_https = url.replace(/^(https?:|)\/\//, '')
-    var url_base64 = btoa(url)
-    $.post("",
-        function(data) {
-            try {
-                var obj = jQuery.parseJSON(data);
-                var size = formatFileSize(obj.size);
-                if (obj.thumbnailLink != null) {
-                    var poster = obj.thumbnailLink.slice(0, -5);
-                } else {
-                    var poster = UI.poster;
-                }
-                var content = `
-  <div class="container text-center"><br>
-  <div class="card text-center">
-  <div class="text-center">
-  <div class="${UI.file_view_alert_class}" id="file_details" role="alert">${obj.name}<br>${size}</div>
-  <video id="vplayer" width="100%" height="100%" playsinline controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen']; data-plyr-config="{ "title": "${decodename}"}" data-poster="${poster}" style="--plyr-captions-text-color: #ffffff;--plyr-captions-background: #000000;">
-    <source src="${url}" type="video/mp4" />
-    <source src="${url}" type="video/webm" />
-    <track kind="captions" label="Default" src="${caption}.vtt" srclang="en" />
-    <track kind="captions" label="English" src="${caption}.en.vtt" srclang="en" default />
-    <track kind="captions" label="Hindi" src="${caption}.hi.vtt" srclang="hi" />
-    <track kind="captions" label="Russian" src="${caption}.ru.vtt" srclang="ru" />
-    <track kind="captions" label="Malayalam" src="${caption}.ml.vtt" srclang="ml" />
-    <track kind="captions" label="Korean" src="${caption}.ko.vtt" srclang="ko" />
-    <track kind="captions" label="Japanese" src="${caption}.ja.vtt" srclang="ja" />
-    <track kind="captions" label="Indonesian" src="${caption}.id.vtt" srclang="id" />
-    <track kind="captions" label="German" src="${caption}.de.vtt" srclang="de" />
-    <track kind="captions" label="French" src="${caption}.fr.vtt" srclang="fr" />
-    <track kind="captions" label="Chinese" src="${caption}.zh.vtt" srclang="zh" />
-    <track kind="captions" label="Arabic" src="${caption}.ar.vtt" srclang="ar" />
-  <track kind="captions" label="${UI.custom_srt_lang}" src="${caption}.${UI.custom_srt_lang}.vtt" srclang="${UI.custom_srt_lang}" />
-  </video>
-  </div>
-  ${UI.disable_player ? '<style>.plyr{display:none;}</style>' : ''}
-  <script>
-   const player = new Plyr('#vplayer',{ratio: "${UI.plyr_io_video_resolution}"});
-  </script></br>
-${UI.disable_video_download ? `` : `
-<div class="card-body">
-<div class="input-group mb-4">
-  <div class="input-group-prepend">
-    <span class="input-group-text" id="">Full URL</span>
-  </div>
-  <input type="text" class="form-control" id="dlurl" value="${url}">
-</div>
-${UI.display_drive_link ? '<a type="button" class="btn btn-info" href="https://drive.google.com/file/d/'+ obj.id +'/view" id ="file_drive_link" target="_blank">GD Link</a>': ''}
-<div class="btn-group text-center">
-    <a href="${url}" type="button" class="btn btn-primary">Download</a>
-    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-      <span class="sr-only"></span>
-    </button>
-    <div class="dropdown-menu">
-      <a class="dropdown-item" href="iina://weblink?url=${url}">IINA</a>
-      <a class="dropdown-item" href="potplayer://${url}">PotPlayer</a>
-      <a class="dropdown-item" href="vlc://${urlvlc}">VLC Mobile</a>
-      <a class="dropdown-item" href="${urlvlc}">VLC Desktop</a>
-      <a class="dropdown-item" href="nplayer-${url}">nPlayer</a>
-      <a class="dropdown-item" href="intent://${url_without_https}#Intent;type=video/any;package=is.xyz.mpv;scheme=https;end;">mpv-android</a>
-      <a class="dropdown-item" href="mpv://${url_base64}">mpv x64</a>
-      <a class="dropdown-item" href="intent:${url}#Intent;package=com.mxtech.videoplayer.ad;S.title=${decodename};end">MX Player (Free)</a>
-      <a class="dropdown-item" href="intent:${url}#Intent;package=com.mxtech.videoplayer.pro;S.title=${decodename};end">MX Player (Pro)</a>
-      <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager/idm.internet.download.manager.Downloader;S.title=${decodename};end">1DM (Free)</a>
-      <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.adm.lite/idm.internet.download.manager.Downloader;S.title=${decodename};end">1DM (Lite)</a>
-      <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.plus/idm.internet.download.manager.Downloader;S.title=${decodename};end">1DM+ (Plus)</a>
-    </div>
-</div>
-<button onclick="copyFunction()" onmouseout="outFunc()" class="btn btn-success"> <span class="tooltiptext" id="myTooltip">Copy</span> </button>
-<br>
-  </div>
-  </div>
-  `}
-  </div>
-  `;
-            } catch (err) {
-                var content = `
-<div class="container"><br>
-<div class="card text-center">
-    <div class="card-body text-center">
-      <div class="${UI.file_view_alert_class}" id="file_details" role="alert"><b>404.</b> That’s an error.</div>
-    </div><p>The requested URL was not found on this server. That’s all we know.</p>
-      <div class="card-text text-center">
-      <div class="btn-group text-center">
-        <a href="/" type="button" class="btn btn-primary">Homepage</a>
+function file_video(name, encoded_name, size, poster, url) {
+  var url_base64 = btoa(url);
+  var caption = url.replace(/\.[^/.]+$/, "");
+  var decodename = decodeURIComponent(encoded_name);
+  var content = `
+    <div class="container text-center"><br>
+      <div class="card text-center">
+        <div class="text-center">
+          <div class="${UI.file_view_alert_class}" id="file_details" role="alert">${name}<br>${size}</div>
+          <video id="vplayer" class="video-js vjs-default-skin" controls preload="auto" width="100%" height="100%" data-setup='{"fluid": true}' style="--plyr-captions-text-color: #ffffff;--plyr-captions-background: #000000;">
+            <source src="${url}" type="video/mp4" />
+            <source src="${url}" type="video/webm" />
+            <source src="${url}" type="video/avi" />
+            <track kind="captions" label="Default" srclang="en" src="${url}.${UI.subtitle_ext}" default>
+          </video>
+        </div>
+        ${UI.disable_player ? '<style>.plyr{display:none;}</style>' : ''}
+        </br>
+        ${UI.disable_video_download ? `` : `
+          <div class="card-body">
+          <div class="input-group mb-4">
+          <div class="input-group-prepend">
+              <span class="input-group-text" id="">Full URL</span>
+          </div>
+          <input type="text" class="form-control" id="dlurl" value="${url}">
+          </div>
+          <div class="btn-group text-center">
+              <a href="${url}" type="button" class="btn btn-primary">Download</a>
+              <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <span class="sr-only"></span>
+              </button>
+              <div class="dropdown-menu">
+              <a class="dropdown-item" href="iina://weblink?url=${url}">IINA</a>
+              <a class="dropdown-item" href="potplayer://${url}">PotPlayer</a>
+              <a class="dropdown-item" href="vlc://${url}">VLC Mobile</a>
+              <a class="dropdown-item" href="${url}">VLC Desktop</a>
+              <a class="dropdown-item" href="nplayer-${url}">nPlayer</a>
+              <a class="dropdown-item" href="intent://${url}#Intent;type=video/any;package=is.xyz.mpv;scheme=https;end;">mpv-android</a>
+              <a class="dropdown-item" href="mpv://${url_base64}">mpv x64</a>
+              <a class="dropdown-item" href="intent:${url}#Intent;package=com.mxtech.videoplayer.ad;S.title=${encoded_name};end">MX Player (Free)</a>
+              <a class="dropdown-item" href="intent:${url}#Intent;package=com.mxtech.videoplayer.pro;S.title=${encoded_name};end">MX Player (Pro)</a>
+              <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager/idm.internet.download.manager.Downloader;S.title=${encoded_name};end">1DM (Free)</a>
+              <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.adm.lite/idm.internet.download.manager.Downloader;S.title=${encoded_name};end">1DM (Lite)</a>
+              <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.plus/idm.internet.download.manager.Downloader;S.title=${encoded_name};end">1DM+ (Plus)</a>
+              </div>
+          </div>
+          <button onclick="copyFunction()" onmouseout="outFunc()" class="btn btn-success"> <span class="tooltiptext" id="myTooltip">Copy</span> </button>
+          <br>
+          </div>
+          </div>
+          `}
       </div>
-        </div><br>
-</div>
-</div>`
-            }
-            $('#content').html(content);
-        });
+    </div>
+  `;
+  $("#content").html(content);
+
+  // Load Video.js and initialize the player
+  var videoJsScript = document.createElement('script');
+  videoJsScript.src = 'https://vjs.zencdn.net/'+UI.videojs_version+'/video.min.js';
+  videoJsScript.onload = function() {
+    // Video.js is loaded, initialize the player
+    const player = videojs('vplayer');
+  };
+  document.head.appendChild(videoJsScript);
+
+  var videoJsStylesheet = document.createElement('link');
+  videoJsStylesheet.href = 'https://vjs.zencdn.net/'+UI.videojs_version+'/video-js.css';
+  videoJsStylesheet.rel = 'stylesheet';
+  document.head.appendChild(videoJsStylesheet);
 }
 
+
+
+/*
 // File display Audio |mp3|flac|m4a|wav|ogg|
 function file_audio(path) {
     var name = path.split('/').pop();
@@ -1419,7 +1349,7 @@ function file_image(path) {
         file(filepath)
     });
 }
-
+*/
 
 // Time conversion
 function utc2delhi(utc_datetime) {

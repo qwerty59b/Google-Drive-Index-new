@@ -56,7 +56,7 @@
 			 // "auth": {"username":"password"} /* Remove double slash before "auth" to activate id password protection */
 		  },
 		  {
-			  "id": "1sUfltWLHbViWCxwMEtpwI0Uk9kHKZ1Fo",
+			  "id": "0ABn5ckpV8kE3Uk9PVA",
 			  "name": "Drive Two",
 			  "protect_file_link": false,
 			 // "auth": {"username":"password", "username1":"password1"} /* Remove double slash before "auth" to activate id password protection */
@@ -124,7 +124,7 @@
 		"display_time": false, // Set this to false to hide display modified time for folder and files
 		"display_download": true, // Set this to false to hide download icon for folder and files on main index
 		"disable_player": false, // Set this to true to hide audio and video players
-		"custom_srt_lang": "", // Subtitle Language Code for Custom .vtt language.
+		"subtitle_ext": "srt", // Subtitle extension supported by videojs
 		"disable_video_download": false, // Remove Download, Copy Button on Videos
 		"second_domain_for_dl": false, // If you want to display other URL for Downloading to protect your main domain.
 		"downloaddomain": domain_for_dl, // Ignore this and set domains at top of this page after service accounts.
@@ -135,7 +135,7 @@
 		"render_head_md": true, // Render Head.md
 		"render_readme_md": true, // Render Readme.md
 		"display_drive_link": false, // This will add a Link Button to Google Drive of that particular file.
-		"plyr_io_version": "3.7.2", // Change plyr.io version in future when needed.
+		"videojs_version": "8.3.0", // Change plyr.io version in future when needed.
 		"plyr_io_video_resolution": "16:9", // For reference, visit: https://github.com/sampotts/plyr#options
 		"unauthorized_owner_link": "https://telegram.dog/Telegram", // Unauthorized Error Page Link to Owner
 		"unauthorized_owner_email": "abuse@telegram.org", // Unauthorized Error Page Owner Email
@@ -1185,7 +1185,7 @@
 			return download(file.id, range, inline);
 	
 		}
-		async function accessToken() {
+		async function getAccessToken() {
 			console.log("accessToken");
 			if (authConfig.expires == undefined || authConfig.expires < Date.now()) {
 				const obj = await fetchAccessToken();
@@ -1257,7 +1257,7 @@
 		}
 	
 		async function requestOptions(headers = {}, method = 'GET') {
-			const Token = await accessToken();
+			const Token = await getAccessToken();
 			headers['authorization'] = 'Bearer ' + Token;
 			return {
 				'method': method,
@@ -1375,8 +1375,12 @@
 		}
 	
 		if (path.slice(-1) == '/') {
-			let form = await request.formData();
-			let list_result = await gd.request_list_of_files(path, form.get('page_token'), Number(form.get('page_index')));
+			let requestData = await request.json();
+			let list_result = await gd.request_list_of_files(
+			  path,
+			  requestData.page_token || null,
+			  Number(requestData.page_index) || 0
+			);
 	
 			if (authConfig['enable_password_file_verify']) {
 				let password = await gd.password(path);
@@ -1388,22 +1392,25 @@
 			}
 	
 			list_result.data.files = await Promise.all(list_result.data.files.map(async (file) => {
-				const {
-				  driveId,
-				  id,
-				  ...fileWithoutId
-				} = file;
+				const { driveId, id, mimeType, ...fileWithoutId } = file;
 			  
 				const encryptedId = await encryptString(id);
 				const encryptedDriveId = await encryptString(driveId);
-				const link = await generateLink(id);
+			  
+				let link = null;
+				if (mimeType !== 'application/vnd.google-apps.folder') {
+				  link = await generateLink(id);
+				}
+			  
 				return {
 				  ...fileWithoutId,
 				  id: encryptedId,
 				  driveId: encryptedDriveId,
+				  mimeType: mimeType,
 				  link: link,
 				};
 			  }));
+			  
 			  
 			const encryptedFiles = list_result;
 			  
@@ -1441,9 +1448,13 @@
 				'Access-Control-Allow-Origin': '*'
 			}
 		};
-		let form = await request.formData();
-		let search_result = await gd.searchFilesinDrive(form.get('q') || '', form.get('page_token'), Number(form.get('page_index')));
-		search_result.data.files = await Promise.all(search_result.data.files.map(async (file) => {
+		const requestData = await request.json();
+		const q = requestData.q || '';
+		const pageToken = requestData.page_token || null;
+		const pageIndex = Number(requestData.page_index) || 0;
+	  
+		const searchResult = await gd.searchFilesinDrive(q, pageToken, pageIndex);
+		searchResult.data.files = await Promise.all(searchResult.data.files.map(async (file) => {
 			const {
 			  driveId,
 			  id,
@@ -1460,7 +1471,7 @@
 			  link: link,
 			};
 		  }));
-		return new Response(JSON.stringify(search_result), option);
+		return new Response(JSON.stringify(searchResult), option);
 	}
 	
 	async function handleId2Path(request, gd) {
@@ -1481,6 +1492,7 @@
 			const id = await decryptString(data.id);
 			let [path, prefix] = await gd.findPathById(id);
 			let jsonpath = '{"path": "/' + prefix + ':' + path + '"}'
+			console.log(jsonpath)
 			return new Response(jsonpath || '', option);
 		} catch (error) {
 			console.log(error)
@@ -1550,7 +1562,7 @@
 				'supportsAllDrives': true
 			};
 			params.q = `'${parent}' in parents and name = '${name}' and trashed = false and mimeType != 'application/vnd.google-apps.shortcut'`;
-			params.fields = "files(id, name, mimeType, size ,createdTime, modifiedTime, iconLink, thumbnailLink, driveId)";
+			params.fields = "files(id, name, mimeType, size ,createdTime, modifiedTime, iconLink, thumbnailLink, driveId, fileExtension)";
 			url += '?' + this.enQuery(params);
 			let requestOption = await this.requestOption();
 			let response;
@@ -1916,7 +1928,7 @@
 		}
 	
 		async requestOption(headers = {}, method = 'GET') {
-			const accessToken = await this.accessToken();
+			const accessToken = await getAccessToken();
 			headers['authorization'] = 'Bearer ' + accessToken;
 			return {
 				'method': method,
