@@ -66,7 +66,7 @@ function render(path) {
             loading_lock: false
         };
         render_search_result_list()
-    } else if (path.match(reg) || path.substr(-1) == '/') {
+    } else if (path.match(reg) || path.slice(-1) == '/') {
         // Used to store the state of some scroll events
         window.scroll_status = {
             // Whether the scroll event is bound
@@ -303,138 +303,120 @@ function requestSearch(params, resultCallback, retries = 3) {
 
 // Render file list
 function list(path) {
-    var content = `<div class="container">${UI.fixed_header ?'<br>': ''}
-  <div id="update"></div>
+  var containerContent = `<div class="container">${UI.fixed_header ?'<br>': ''}
+    <div id="update"></div>
     <div id="head_md" style="display:none; padding: 20px 20px;"></div>
     <div class="${UI.path_nav_alert_class} d-flex align-items-center" role="alert" style="margin-bottom: 0; padding-bottom: 0rem;">
-  <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb" id="folderne"><li class="breadcrumb-item"><a href="/">Home</a></li>`;
-    var navlink = '';
-    var navfulllink = window.location.pathname;
-    var breadbar = '';
-    var navarrayde = decodeURIComponent(navfulllink).split('/');
-    // <li class="breadcrumb-item"><a href="${item}">${navnamecr}</a></li>
-    var navarray = navfulllink.trim('/').split('/');
-    var p = '/';
-    if (navarray.length > 1) {
-        for (var i in navarray) {
-            var an = navarray[i];
-            n1 = decodeURIComponent(an);
-            n2 = n1.replace(/\?.+/g, "$'")
-            if (n2.length > 15) {
-                n = n2.slice(0, 5) + '...';
-            } else {
-                n = n2.slice(0, 15);
-            }
-            p += an + '/';
-            var ext = p.split('.').pop().toLowerCase();
-            if (n === '') {
-                break;
-            }
-            content += `<li class="breadcrumb-item"><a href="${p}">${n}</a></li>`;
-        }
+      <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb" id="folderne">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>`;
+
+  var navfulllink = window.location.pathname;
+  var navarray = navfulllink.trim('/').split('/');
+  var currentPath = '/';
+
+  if (navarray.length > 1) {
+    for (var i in navarray) {
+      var pathPart = navarray[i];
+      var decodedPathPart = decodeURIComponent(pathPart).replace(/\//g, '%2F');
+      var trimmedPathPart = decodedPathPart.replace(/\?.+/g, "$'");
+
+      var displayedPathPart = trimmedPathPart.length > 15 ? trimmedPathPart.slice(0, 5) + '...' : trimmedPathPart.slice(0, 15);
+
+      currentPath += pathPart + '/';
+      var extension = currentPath.split('.').pop().toLowerCase();
+
+      if (displayedPathPart === '') {
+        break;
+      }
+
+      containerContent += `<li class="breadcrumb-item"><a href="${currentPath}">${displayedPathPart}</a></li>`;
     }
-    content += `</ol>
-  </nav>
+  }
+
+  containerContent += `</ol>
+    </nav>
   </div>
-    <div id="list" class="list-group text-break">
-    </div>
-    <div class="${UI.file_count_alert_class} text-center d-none" role="alert" id="count">Total <span class="number text-center"></span> items</div>
-    <div id="readme_md" style="display:none; padding: 20px 20px;"></div>
-    </div>
-    `;
-    $('#content').html(content);
+  <div id="list" class="list-group text-break"></div>
+  <div class="${UI.file_count_alert_class} text-center d-none" role="alert" id="count">Total <span class="number text-center"></span> items</div>
+  <div id="readme_md" style="display:none; padding: 20px 20px;"></div>
+</div>`;
 
-    var password = localStorage.getItem('password' + path);
-    $('#list').html(`<div class="d-flex justify-content-center"><div class="spinner-border ${UI.loading_spinner_class} m-5" role="status" id="spinner"><span class="sr-only"></span></div></div>`);
-    $('#readme_md').hide().html('');
-    $('#head_md').hide().html('');
+  $('#content').html(containerContent);
 
-    /**
-     * Callback after the column list request successfully returns data
-     * The result returned by @param res (object)
-     * @param path the requested path
-     * @param prevReqParams parameters used in request
-     */
-    function successResultCallback(res, path, prevReqParams) {
+  var password = localStorage.getItem('password' + path);
 
-        // Temporarily store nextPageToken and currentPageIndex in the list element
-        $('#list')
-            .data('nextPageToken', res['nextPageToken'])
-            .data('curPageIndex', res['curPageIndex']);
+  $('#list').html(`<div class="d-flex justify-content-center"><div class="spinner-border ${UI.loading_spinner_class} m-5" role="status" id="spinner"><span class="sr-only"></span></div></div>`);
+  $('#readme_md').hide().html('');
+  $('#head_md').hide().html('');
 
-        // Remove loading spinner
-        $('#spinner').remove();
+  function handleSuccessResult(res, path, prevReqParams) {
+    $('#list')
+      .data('nextPageToken', res['nextPageToken'])
+      .data('curPageIndex', res['curPageIndex']);
 
-        if (res['nextPageToken'] === null) {
-            // If it is the last page, unbind the scroll event, reset scroll_status, and append the data
-            $(window).off('scroll');
-            window.scroll_status.event_bound = false;
-            window.scroll_status.loading_lock = false;
-            append_files_to_list(path, res['data']['files']);
-        } else {
-            // If it is not the last page, append data and bind the scroll event (if not already bound), update scroll_status
-            append_files_to_list(path, res['data']['files']);
-            if (window.scroll_status.event_bound !== true) {
-                // Bind event, if not yet bound
-                $(window).on('scroll', function() {
-                    var scrollTop = $(this).scrollTop();
-                    var scrollHeight = getDocumentHeight();
-                    var windowHeight = $(this).height();
-                    // Roll to the bottom
-                    if (scrollTop + windowHeight > scrollHeight - (Os.isMobile ? 130 : 80)) {
-                        /*
-                            When the event of scrolling to the bottom is triggered, if it is already loading at this time, the event is ignored;
-                            Otherwise, go to loading and occupy the loading lock, indicating that loading is in progress
-                         */
-                        if (window.scroll_status.loading_lock === true) {
-                            return;
-                        }
-                        window.scroll_status.loading_lock = true;
+    $('#spinner').remove();
 
-                        // Show a loading spinner
-                        $(`<div id="spinner" class="d-flex justify-content-center"><div class="spinner-border ${UI.loading_spinner_class} m-5" role="status" id="spinner"><span class="sr-only"></span></div></div>`)
-                            .insertBefore('#readme_md');
+    if (res['nextPageToken'] === null) {
+      $(window).off('scroll');
+      window.scroll_status.event_bound = false;
+      window.scroll_status.loading_lock = false;
+      append_files_to_list(path, res['data']['files']);
+    } else {
+      append_files_to_list(path, res['data']['files']);
+      if (window.scroll_status.event_bound !== true) {
+        $(window).on('scroll', function() {
+          var scrollTop = $(this).scrollTop();
+          var scrollHeight = getDocumentHeight();
+          var windowHeight = $(this).height();
 
-                        let $list = $('#list');
-                        requestListPath(path, {
-                                password: prevReqParams['password'],
-                                page_token: $list.data('nextPageToken'),
-                                // Request next page
-                                page_index: $list.data('curPageIndex') + 1
-                            },
-                            successResultCallback,
-                            // The password is the same as before. No authError
-                            null
-                        )
-                    }
-                });
-                window.scroll_status.event_bound = true
+          if (scrollTop + windowHeight > scrollHeight - (Os.isMobile ? 130 : 80)) {
+            if (window.scroll_status.loading_lock === true) {
+              return;
             }
-        }
 
-        // After loading successfully and rendering new data successfully, release the loading lock so that you can continue to process the "scroll to bottom" event
-        if (window.scroll_status.loading_lock === true) {
-            window.scroll_status.loading_lock = false
-        }
+            window.scroll_status.loading_lock = true;
+
+            $(`<div id="spinner" class="d-flex justify-content-center"><div class="spinner-border ${UI.loading_spinner_class} m-5" role="status" id="spinner"><span class="sr-only"></span></div></div>`)
+              .insertBefore('#readme_md');
+
+            let $list = $('#list');
+            requestListPath(path, {
+              password: prevReqParams['password'],
+              page_token: $list.data('nextPageToken'),
+              page_index: $list.data('curPageIndex') + 1
+            },
+            handleSuccessResult,
+            null);
+          }
+        });
+        
+        window.scroll_status.event_bound = true;
+      }
     }
 
-    // Start requesting data from page 1
-    requestListPath(path, {
-            password: password
-        },
-        successResultCallback,
-        function(path) {
-            $('#spinner').remove();
-            var pass = prompt("Directory encryption, please enter the password", "");
-            localStorage.setItem('password' + path, pass);
-            if (pass != null && pass != "") {
-                list(path);
-            } else {
-                history.go(-1);
-            }
-        });
+    if (window.scroll_status.loading_lock === true) {
+      window.scroll_status.loading_lock = false;
+    }
+  }
+
+  requestListPath(path, {
+      password: password
+    },
+    handleSuccessResult,
+    function(path) {
+      $('#spinner').remove();
+      var passwordInput = prompt("Directory encryption, please enter the password", "");
+      localStorage.setItem('password' + path, passwordInput);
+      
+      if (passwordInput != null && passwordInput != "") {
+        list(path);
+      } else {
+        history.go(-1);
+      }
+    });
 }
+
 
 /**
  * Append the data of the requested new page to the list
@@ -808,6 +790,11 @@ function file(path) {
       .then(function (obj) {
         var mimeType = obj.mimeType;
         var fileExtension =  obj.fileExtension
+        const code = ["php", "css", "go", "java", "js", "json", "txt", "sh", "md", "html", "xml", "py", "rb", "c", "cpp", "h", "hpp"];
+        const video = ["mp4", "webm", "avi", "mpg", "mpeg", "mkv", "rm", "rmvb", "mov", "wmv", "asf", "ts", "flv", "3gp", "m4v"];
+        const audio = ["mp3", "flac", "wav", "ogg", "m4a", "aac", "wma", "alac"];
+        const image = ["bmp", "jpg", "jpeg", "png", "gif", "svg", "tiff", "ico"];
+        const pdf = ["pdf"];
         if (mimeType === "application/vnd.google-apps.folder") {
             window.location.href = window.location.pathname + "/";
         } else if (fileExtension) {
@@ -817,9 +804,19 @@ function file(path) {
           const url = UI.second_domain_for_dl
           ? UI.downloaddomain + obj.link
           : window.location.origin + obj.link;
-          if (mimeType.includes("video")) {
+          if (mimeType.includes("video") || video.includes(fileExtension)) {
             const poster = obj.thumbnailLink.replace("s220", "s0");
             file_video(name, encoded_name, size, poster, url);
+          } else if (mimeType.includes("audio") || audio.includes(fileExtension)) {
+            file_audio(path);
+          } else if (mimeType.includes("image") || image.includes(fileExtension)) {
+            file_image(path);
+          } else if (mimeType.includes("pdf") || pdf.includes(fileExtension)) {
+            file_pdf(path);
+          } else if (code.includes(fileExtension)) {
+            file_code(path);
+          } else {
+            file_others(path);
           }
         }
       })
@@ -969,7 +966,6 @@ function file_video(name, encoded_name, size, poster, url) {
             <source src="${url}" type="video/mp4" />
             <source src="${url}" type="video/webm" />
             <source src="${url}" type="video/avi" />
-            <track kind="captions" label="Default" srclang="en" src="${url}.${UI.subtitle_ext}" default>
           </video>
         </div>
         ${UI.disable_player ? '<style>.plyr{display:none;}</style>' : ''}

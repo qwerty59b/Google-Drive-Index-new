@@ -28,8 +28,8 @@
 		"refresh_token": "", // Authorize token
 		"service_account": true, // true if you're using Service Account instead of user account
 		"service_account_json": randomserviceaccount, // don't touch this one
-		"files_list_page_size": 50,
-		"search_result_list_page_size": 50,
+		"files_list_page_size": 1000,
+		"search_result_list_page_size": 100	0,
 		"enable_cors_file_down": false,
 		"enable_password_file_verify": true, // support for .password file
 		"direct_link_protection": false, // protects direct links with Display UI
@@ -124,7 +124,6 @@
 		"display_time": false, // Set this to false to hide display modified time for folder and files
 		"display_download": true, // Set this to false to hide download icon for folder and files on main index
 		"disable_player": false, // Set this to true to hide audio and video players
-		"subtitle_ext": "srt", // Subtitle extension supported by videojs
 		"disable_video_download": false, // Remove Download, Copy Button on Videos
 		"second_domain_for_dl": false, // If you want to display other URL for Downloading to protect your main domain.
 		"downloaddomain": domain_for_dl, // Ignore this and set domains at top of this page after service accounts.
@@ -135,8 +134,7 @@
 		"render_head_md": true, // Render Head.md
 		"render_readme_md": true, // Render Readme.md
 		"display_drive_link": false, // This will add a Link Button to Google Drive of that particular file.
-		"videojs_version": "8.3.0", // Change plyr.io version in future when needed.
-		"plyr_io_video_resolution": "16:9", // For reference, visit: https://github.com/sampotts/plyr#options
+		"videojs_version": "8.3.0", // Change videojs version in future when needed.
 		"unauthorized_owner_link": "https://telegram.dog/Telegram", // Unauthorized Error Page Link to Owner
 		"unauthorized_owner_email": "abuse@telegram.org", // Unauthorized Error Page Owner Email
 		"search_all_drives": false // gives gdrive links on search and searches all drives on that account, doesn't require adding
@@ -161,7 +159,6 @@
 		window.UI = JSON.parse('${JSON.stringify(uiConfig)}');
 	  </script>
 	  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-	  <link rel="stylesheet" href="https://cdn.plyr.io/${uiConfig.plyr_io_version}/plyr.css" />
 	  <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.0.0/dist/${uiConfig.theme}/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 	  <style>a{color:${uiConfig.css_a_tag_color};}p{color:${uiConfig.css_p_tag_color};}</style>
 	  <script src="http://127.0.0.1:5500/src/app.js"></script>
@@ -171,8 +168,7 @@
 	<body>
 	</body>
 	  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8" crossorigin="anonymous"></script>
-	  <script src="https://cdn.plyr.io/${uiConfig.plyr_io_version}/plyr.polyfilled.js"></script>
-	</html>`;
+		</html>`;
 	};
 	
 	const homepage = `<!DOCTYPE html>
@@ -1012,6 +1008,7 @@
 				}
 			}
 		}
+		
 		if (gds.length === 0) {
 			for (let i = 0; i < authConfig.roots.length; i++) {
 				const gd = new googleDrive(authConfig, i);
@@ -1239,7 +1236,7 @@
 		async function findItemById(id) {
 			const is_user_drive = this.root_type === DriveFixedTerms.gd_root_type.user_drive;
 			let url = `https://www.googleapis.com/drive/v3/files/${id}?fields=${DriveFixedTerms.default_file_fields}${is_user_drive ? '' : '&supportsAllDrives=true'}`;
-			let requestOption = await requestOptions();
+			let requestOption = await this.requestOptions();
 			let res = await fetch(url, requestOption);
 			return await res.json()
 		}
@@ -1254,82 +1251,6 @@
 			  await this.sleep(800 * (i + 1));
 		  }
 			return response;
-		}
-	
-		async function requestOptions(headers = {}, method = 'GET') {
-			const Token = await getAccessToken();
-			headers['authorization'] = 'Bearer ' + Token;
-			return {
-				'method': method,
-				'headers': headers
-			};
-		}
-	
-		async function download(id, range = '', inline) {
-			let url = `https://www.googleapis.com/drive/v3/files/${id}?alt=media`;
-			const requestOption = await requestOptions();
-			requestOption.headers['Range'] = range;
-			let file = await findItemById(id);
-			if (!file.name) {
-			   return new Response(`{"error":"Unable to Find this File, Try Again."}`, {
-				 status: 500,
-				 headers: {
-					 "content-type": "application/json",
-					 "Access-Control-Allow-Origin": authConfig.cors_domain,
-					 "Cache-Control": "max-age=3600",
-				 }
-			   });
-		   }
-			let res;
-			 for (let i = 0; i < 3; i++) {
-				 res = await fetch(url, requestOption);
-				 if (res.ok) {
-					 break;
-				 }
-				 await sleep(800 * (i + 1));
-				 console.log(res);
-			 }
-			const second_domain_for_dl = `${uiConfig.second_domain_for_dl}`
-			if (second_domain_for_dl == 'true') {
-				const res = await fetch(`${uiConfig.jsdelivr_cdn_src}@${uiConfig.version}/assets/disable_download.html`);
-				return new Response(await res.text(), {
-					headers: {
-						"content-type": "text/html;charset=UTF-8",
-					},
-				})
-			}
-			else if (res.ok) {
-				const { headers } = res = new Response(res.body, res)
-				headers.set("Content-Disposition", `attachment; filename="${file.name}"`);
-				headers.set("Content-Length", file.size);
-				authConfig.enable_cors_file_down && headers.append('Access-Control-Allow-Origin', '*');
-				inline === true && headers.set('Content-Disposition', 'inline');
-				return res;
-			}
-			else if(res.status == 404){
-				return new Response(not_found, {
-					status: 404,
-					headers: {
-						"content-type": "text/html;charset=UTF-8",
-					},
-				})
-			} else if (res.status == 403) {
-				return new Response("fileNotDownloadable", {
-					status: 403,
-					headers: {
-						"content-type": "text/html;charset=UTF-8",
-					},
-				})
-			} else {
-				/*const res = await fetch(`${uiConfig.jsdelivr_cdn_src}@${uiConfig.version}/assets/download_error.html`);
-				return new Response(await res.text(), {
-					headers: {
-						"content-type": "text/html;charset=UTF-8",
-					},
-				})*/
-				return new Response(await res.text(), {}
-				)
-			}
 		}
 	
 		function enQuery(data) {
@@ -1507,6 +1428,7 @@
 		}
 	}
 	
+	// start of class googleDrive
 	class googleDrive {
 		constructor(authConfig, order) {
 			this.order = order;
@@ -1522,7 +1444,7 @@
 			this.paths["/"] = this.root['id'];
 		}
 		async init() {
-			await this.accessToken();
+			await this.getAccessToken();
 			if (authConfig.user_drive_real_root_id) return;
 			const root_obj = await (gds[0] || this).findItemById('root');
 			if (root_obj && root_obj.id) {
@@ -1564,7 +1486,7 @@
 			params.q = `'${parent}' in parents and name = '${name}' and trashed = false and mimeType != 'application/vnd.google-apps.shortcut'`;
 			params.fields = "files(id, name, mimeType, size ,createdTime, modifiedTime, iconLink, thumbnailLink, driveId, fileExtension)";
 			url += '?' + this.enQuery(params);
-			let requestOption = await this.requestOption();
+			let requestOption = await this.requestOptions();
 			let response;
 			for (let i = 0; i < 3; i++) {
 				response = await fetch(url, requestOption);
@@ -1633,7 +1555,7 @@
 			}
 			let url = 'https://www.googleapis.com/drive/v3/files';
 			url += '?' + this.enQuery(params);
-			let requestOption = await this.requestOption();
+			let requestOption = await this.requestOptions();
 			let response;
 			for (let i = 0; i < 3; i++) {
 				response = await fetch(url, requestOption);
@@ -1661,7 +1583,7 @@
 				this.passwords[path] = null;
 			} else {
 				let url = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
-				let requestOption = await this.requestOption();
+				let requestOption = await this.requestOptions();
 				let response = await this.fetch200(url, requestOption);
 				this.passwords[path] = await response.text();
 			}
@@ -1721,7 +1643,7 @@
 	
 			let url = 'https://www.googleapis.com/drive/v3/files';
 			url += '?' + this.enQuery(params);
-			let requestOption = await this.requestOption();
+			let requestOption = await this.requestOptions();
 			let response;
 			for (let i = 0; i < 3; i++) {
 				response = await fetch(url, requestOption);
@@ -1807,7 +1729,7 @@
 		async findItemById(id) {
 			const is_user_drive = this.root_type === DriveFixedTerms.gd_root_type.user_drive;
 			let url = `https://www.googleapis.com/drive/v3/files/${id}?fields=${DriveFixedTerms.default_file_fields}${is_user_drive ? '' : '&supportsAllDrives=true'}`;
-			let requestOption = await this.requestOption();
+			let requestOption = await this.requestOptions();
 			let res = await fetch(url, requestOption);
 			return await res.json()
 		}
@@ -1848,7 +1770,7 @@
 			params.q = `'${parent}' in parents and mimeType = 'application/vnd.google-apps.folder' and name = '${name}'  and trashed = false`;
 			params.fields = "nextPageToken, files(id, name, mimeType)";
 			url += '?' + this.enQuery(params);
-			let requestOption = await this.requestOption();
+			let requestOption = await this.requestOptions();
 			let response;
 			for (let i = 0; i < 3; i++) {
 				response = await fetch(url, requestOption);
@@ -1864,7 +1786,7 @@
 			return obj.files[0].id;
 		}
 	
-		async accessToken() {
+		async getAccessToken() {
 			console.log("accessToken");
 			if (this.authConfig.expires == undefined || this.authConfig.expires < Date.now()) {
 				const obj = await this.fetchAccessToken();
@@ -1927,9 +1849,9 @@
 			return response;
 		}
 	
-		async requestOption(headers = {}, method = 'GET') {
-			const accessToken = await getAccessToken();
-			headers['authorization'] = 'Bearer ' + accessToken;
+		async requestOptions(headers = {}, method = 'GET') {
+			const Token = await this.getAccessToken();
+			headers['authorization'] = 'Bearer ' + Token;
 			return {
 				'method': method,
 				'headers': headers
@@ -1954,6 +1876,74 @@
 					else resolve(i);
 				}, ms);
 			})
+		}
+	}
+	// end of class googleDrive
+	const drive = new googleDrive(authConfig, 0);
+	async function download(id, range = '', inline) {
+		let url = `https://www.googleapis.com/drive/v3/files/${id}?alt=media`;
+		const requestOption = await drive.requestOptions();
+		requestOption.headers['Range'] = range;
+		let file = await drive.findItemById(id);
+		if (!file.name) {
+		   return new Response(`{"error":"Unable to Find this File, Try Again."}`, {
+			 status: 500,
+			 headers: {
+				 "content-type": "application/json",
+				 "Access-Control-Allow-Origin": authConfig.cors_domain,
+				 "Cache-Control": "max-age=3600",
+			 }
+		   });
+	   }
+		let res;
+		 for (let i = 0; i < 3; i++) {
+			 res = await fetch(url, requestOption);
+			 if (res.ok) {
+				 break;
+			 }
+			 await sleep(800 * (i + 1));
+			 console.log(res);
+		 }
+		const second_domain_for_dl = `${uiConfig.second_domain_for_dl}`
+		if (second_domain_for_dl == 'true') {
+			const res = await fetch(`${uiConfig.jsdelivr_cdn_src}@${uiConfig.version}/assets/disable_download.html`);
+			return new Response(await res.text(), {
+				headers: {
+					"content-type": "text/html;charset=UTF-8",
+				},
+			})
+		}
+		else if (res.ok) {
+			const { headers } = res = new Response(res.body, res)
+			headers.set("Content-Disposition", `attachment; filename="${file.name}"`);
+			headers.set("Content-Length", file.size);
+			authConfig.enable_cors_file_down && headers.append('Access-Control-Allow-Origin', '*');
+			inline === true && headers.set('Content-Disposition', 'inline');
+			return res;
+		}
+		else if(res.status == 404){
+			return new Response(not_found, {
+				status: 404,
+				headers: {
+					"content-type": "text/html;charset=UTF-8",
+				},
+			})
+		} else if (res.status == 403) {
+			return new Response("fileNotDownloadable", {
+				status: 403,
+				headers: {
+					"content-type": "text/html;charset=UTF-8",
+				},
+			})
+		} else {
+			/*const res = await fetch(`${uiConfig.jsdelivr_cdn_src}@${uiConfig.version}/assets/download_error.html`);
+			return new Response(await res.text(), {
+				headers: {
+					"content-type": "text/html;charset=UTF-8",
+				},
+			})*/
+			return new Response(await res.text(), {}
+			)
 		}
 	}
 

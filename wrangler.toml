@@ -1,7 +1,6 @@
 name = "google-drive-index"
 main = "src/worker.js"
 compatibility_date = "2023-07-06"
-version = "2.3.1"
 # # KV Namespace binding - For more information: https://developers.cloudflare.com/workers/runtime-apis/kv
 # [[kv_namespaces]]
 # binding = "MY_KV_NAMESPACE"
