@@ -29,15 +29,17 @@
 		"service_account": true, // true if you're using Service Account instead of user account
 		"service_account_json": randomserviceaccount, // don't touch this one
 		"files_list_page_size": 1000,
-		"search_result_list_page_size": 100	0,
+		"search_result_list_page_size": 100,
 		"enable_cors_file_down": false,
 		"enable_password_file_verify": true, // support for .password file
 		"direct_link_protection": false, // protects direct links with Display UI
+		"disable_anonymous_download": false, // disables direct links and hides download button in UI
 		"lock_folders": false, // keeps folders and search locked if auth in on, and allows individual file view
 		"enable_auth0_com": false, // follow guide to add auth0.com to secure index with powerful login based system
 		"enable_login": true, // set to true if you want to add login system
 		"login_days" : 7, // days to keep logged in
 		"file_link_expiry" : 7, // expire file link in set number of days
+		"search_all_drives": true, // search all of your drives instead of current drive if set to true
 		"users_list": [
 			{
 				"username": "admin",
@@ -125,9 +127,9 @@
 		"display_download": true, // Set this to false to hide download icon for folder and files on main index
 		"disable_player": false, // Set this to true to hide audio and video players
 		"disable_video_download": false, // Remove Download, Copy Button on Videos
+		"allow_selecting_files" : true, // Disable Selecting Files to Download in Bulk
 		"second_domain_for_dl": false, // If you want to display other URL for Downloading to protect your main domain.
 		"downloaddomain": domain_for_dl, // Ignore this and set domains at top of this page after service accounts.
-		"videodomain": video_domain_for_dl, // Ignore this and set domains at top of this page after service accounts.
 		"poster": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.3/images/poster.jpg", // Video poster URL or see Readme to how to load from Drive
 		"audioposter": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.3/images/music.jpg", // Video poster URL or see Readme to how to load from Drive
 		"jsdelivr_cdn_src": "https://cdn.jsdelivr.net/npm/@googledrive/index", // If Project is Forked, then enter your GitHub repo
@@ -137,7 +139,6 @@
 		"videojs_version": "8.3.0", // Change videojs version in future when needed.
 		"unauthorized_owner_link": "https://telegram.dog/Telegram", // Unauthorized Error Page Link to Owner
 		"unauthorized_owner_email": "abuse@telegram.org", // Unauthorized Error Page Owner Email
-		"search_all_drives": false // gives gdrive links on search and searches all drives on that account, doesn't require adding
 	};
 	
 	// DON'T TOUCH BELOW THIS UNLESS YOU KNOW WHAT YOU'RE DOING
@@ -163,7 +164,7 @@
 	  <style>a{color:${uiConfig.css_a_tag_color};}p{color:${uiConfig.css_p_tag_color};}</style>
 	  <script src="http://127.0.0.1:5500/src/app.js"></script>
 	  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.12.313/build/pdf.min.js"></script>
-	  <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
+	  <script src="https://cdn.jsdelivr.net/npm/marked@5.1.1/lib/marked.umd.min.js"></script>
 	</head>
 	<body>
 	</body>
@@ -923,7 +924,9 @@
 
 		if (authConfig.enable_login) {
 			//console.log("Login Enabled")
-			if (request.method === 'GET') {
+			if (path == '/download.aspx' && !authConfig.disable_anonymous_download) {
+				console.log("Anonymous Download")
+			} else if (request.method === 'GET') {
 				//console.log("GET Request")
 				const cookie = request.headers.get('cookie');
 				if (cookie && cookie.includes('session=')) {
@@ -1595,7 +1598,6 @@
 			const types = DriveFixedTerms.gd_root_type;
 			const is_user_drive = this.root_type === types.user_drive;
 			const is_share_drive = this.root_type === types.share_drive;
-			const search_all_drives = `${uiConfig.search_all_drives}`
 			const empty_result = {
 				nextPageToken: null,
 				curPageIndex: page_index,
@@ -1613,7 +1615,7 @@
 			let name_search_str = `name contains '${words.join("' AND name contains '")}'`;
 			let params = {};
 			if (is_user_drive) {
-				if (search_all_drives == 'true') {
+				if (authConfig.search_all_drives) {
 					params.corpora = 'allDrives';
 					params.includeItemsFromAllDrives = true;
 					params.supportsAllDrives = true;
@@ -1623,7 +1625,7 @@
 				}
 			}
 			if (is_share_drive) {
-				if (search_all_drives == 'true') {
+				if (authConfig.search_all_drives) {
 					params.corpora = 'allDrives';
 				}
 				else {
