@@ -1,4 +1,7 @@
 	// add multiple serviceaccounts as {}, {}, {}, random account will be selected by each time app is opened.
+
+	const local_testing = false
+
 	const serviceaccounts = [
 		{
 			"type": "service_account",
@@ -55,13 +58,11 @@
 			  "id": "0APTJQGSDLteeUk9PVA",
 			  "name": "Drive One",
 			  "protect_file_link": false,
-			 // "auth": {"username":"password"} /* Remove double slash before "auth" to activate id password protection */
 		  },
 		  {
 			  "id": "0ABn5ckpV8kE3Uk9PVA",
 			  "name": "Drive Two",
 			  "protect_file_link": false,
-			 // "auth": {"username":"password", "username1":"password1"} /* Remove double slash before "auth" to activate id password protection */
 		  },
 		]};
 		const crypto_base_key = "3225f86e99e205347b4310e437253bfd" // Example 256 bit key used.
@@ -162,7 +163,7 @@
 	  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 	  <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.0.0/dist/${uiConfig.theme}/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 	  <style>a{color:${uiConfig.css_a_tag_color};}p{color:${uiConfig.css_p_tag_color};}</style>
-	  <script src="http://127.0.0.1:5500/src/app.js"></script>
+	  <script src="${local_testing ? 'http://127.0.0.1:5500/src/app.js' : '/app.js'}"></script>
 	  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.12.313/build/pdf.min.js"></script>
 	  <script src="https://cdn.jsdelivr.net/npm/marked@5.1.1/lib/marked.umd.min.js"></script>
 	</head>
@@ -921,7 +922,20 @@
 		let url = new URL(request.url);
 		let path = url.pathname;
 		let hostname = url.hostname;
-
+		if (path == '/app.js') {
+			const js = await fetch('https://gitlab.com/GoogleDriveIndex/Google-Drive-Index/-/raw/dev/src/app.js', {
+				method: 'GET',
+			})
+			const data = await js.text()
+			return new Response(data, {
+				status: 200,
+				headers: {
+					'Content-Type': 'application/javascript; charset=utf-8',
+					'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+					'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
+				}
+			});
+		}
 		if (authConfig.enable_login) {
 			//console.log("Login Enabled")
 			if (path == '/download.aspx' && !authConfig.disable_anonymous_download) {
