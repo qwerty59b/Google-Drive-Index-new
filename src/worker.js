@@ -31,7 +31,7 @@
 		"refresh_token": "", // Authorize token
 		"service_account": true, // true if you're using Service Account instead of user account
 		"service_account_json": randomserviceaccount, // don't touch this one
-		"files_list_page_size": 1000,
+		"files_list_page_size": 100,
 		"search_result_list_page_size": 100,
 		"enable_cors_file_down": false,
 		"enable_password_file_verify": true, // support for .password file
