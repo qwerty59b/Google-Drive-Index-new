@@ -58,12 +58,7 @@
 			  "id": "0APTJQGSDLteeUk9PVA",
 			  "name": "Drive One",
 			  "protect_file_link": false,
-		  },
-		  {
-			  "id": "0ABn5ckpV8kE3Uk9PVA",
-			  "name": "Drive Two",
-			  "protect_file_link": false,
-		  },
+		  }
 		]};
 		const crypto_base_key = "3225f86e99e205347b4310e437253bfd" // Example 256 bit key used.
 		const encrypt_iv = new Uint8Array([247,254,106,195,32,148,131,244,222,133,26,182,20,138,215,81]); // Example 128 bit IV used.
