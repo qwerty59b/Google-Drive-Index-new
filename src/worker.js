@@ -1,6 +1,6 @@
 	// add multiple serviceaccounts as {}, {}, {}, random account will be selected by each time app is opened.
 
-	const local_testing = false
+	const local_testing = true
 
 	const serviceaccounts = [
 		{
@@ -1390,7 +1390,7 @@
 		const q = requestData.q || '';
 		const pageToken = requestData.page_token || null;
 		const pageIndex = Number(requestData.page_index) || 0;
-	  
+		if (q == '') return new Response(JSON.stringify({"nextPageToken":null,"curPageIndex":0,"data":{"files":[]}}), option);
 		const searchResult = await gd.searchFilesinDrive(q, pageToken, pageIndex);
 		searchResult.data.files = await Promise.all(searchResult.data.files.map(async (file) => {
 			const {
@@ -1728,7 +1728,7 @@
 			// Cache the path and id of each level found
 			p_files.forEach((value, idx) => {
 				const is_folder = idx === 0 ? (p_files[idx].mimeType === DriveFixedTerms.folder_mime_type) : true;
-				let path = '/' + p_files.slice(idx).map(it => it.name).reverse().join('/');
+				let path = '/' + p_files.slice(idx).map(it => encodeURIComponent(it.name)).reverse().join('/');
 				if (is_folder) path += '/';
 				cache.push({
 					id: p_files[idx].id,

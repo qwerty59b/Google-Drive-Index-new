@@ -484,9 +484,10 @@ function append_files_to_list(path, files) {
     var is_file = false
     for (i in files) {
         var item = files[i];
-        var ep = item.name + '/';
+        var ep = encodeURIComponent(item.name).replace(/\//g, '%2F') + '/';
         var p = path + ep.replace(new RegExp('#', 'g'), '%23').replace(new RegExp('\\?', 'g'), '%3F');
         item['modifiedTime'] = utc2delhi(item['modifiedTime']);
+         // replace / with %2F
         if (item['mimeType'] == 'application/vnd.google-apps.folder') {
             html += `<a href="${p}" style="color: ${UI.folder_text_color};" class="countitems list-group-item list-group-item-action"><svg width="1.5em" height="1.5em" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><linearGradient id="WQEfvoQAcpQgQgyjQQ4Hqa" x1="24" x2="24" y1="6.708" y2="14.977" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#eba600"></stop><stop offset="1" stop-color="#c28200"></stop></linearGradient><path fill="url(#WQEfvoQAcpQgQgyjQQ4Hqa)" d="M24.414,10.414l-2.536-2.536C21.316,7.316,20.553,7,19.757,7L5,7C3.895,7,3,7.895,3,9l0,30	c0,1.105,0.895,2,2,2l38,0c1.105,0,2-0.895,2-2V13c0-1.105-0.895-2-2-2l-17.172,0C25.298,11,24.789,10.789,24.414,10.414z"></path><linearGradient id="WQEfvoQAcpQgQgyjQQ4Hqb" x1="24" x2="24" y1="10.854" y2="40.983" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffd869"></stop><stop offset="1" stop-color="#fec52b"></stop></linearGradient><path fill="url(#WQEfvoQAcpQgQgyjQQ4Hqb)" d="M21.586,14.414l3.268-3.268C24.947,11.053,25.074,11,25.207,11H43c1.105,0,2,0.895,2,2v26	c0,1.105-0.895,2-2,2H5c-1.105,0-2-0.895-2-2V15.5C3,15.224,3.224,15,3.5,15h16.672C20.702,15,21.211,14.789,21.586,14.414z"></path></svg> ${item.name} ${UI.display_time ? `<span class="badge bg-info float-end"> ` + item['modifiedTime'] + ` </span>` : ``}</a>`;
         } else {
@@ -770,14 +771,13 @@ function append_search_result_to_list(files) {
     var is_file = false;
     for (i in files) {
         var item = files[i];
-        var p = '/' + cur + ':/' + item.name + '/';
         if (item['size'] == undefined) {
             item['size'] = "";
         }
 
         item['modifiedTime'] = utc2delhi(item['modifiedTime']);
         if (item['mimeType'] == 'application/vnd.google-apps.folder') {
-            html += `<a style="color: ${UI.folder_text_color};" onclick="onSearchResultItemClick('${item['id']}')" data-bs-toggle="modal" data-bs-target="#SearchModel" id="${item['id']}" class="countitems list-group-item list-group-item-action"><svg width="1.5em" height="1.5em" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><linearGradient id="WQEfvoQAcpQgQgyjQQ4Hqa" x1="24" x2="24" y1="6.708" y2="14.977" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#eba600"></stop><stop offset="1" stop-color="#c28200"></stop></linearGradient><path fill="url(#WQEfvoQAcpQgQgyjQQ4Hqa)" d="M24.414,10.414l-2.536-2.536C21.316,7.316,20.553,7,19.757,7L5,7C3.895,7,3,7.895,3,9l0,30	c0,1.105,0.895,2,2,2l38,0c1.105,0,2-0.895,2-2V13c0-1.105-0.895-2-2-2l-17.172,0C25.298,11,24.789,10.789,24.414,10.414z"></path><linearGradient id="WQEfvoQAcpQgQgyjQQ4Hqb" x1="24" x2="24" y1="10.854" y2="40.983" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffd869"></stop><stop offset="1" stop-color="#fec52b"></stop></linearGradient><path fill="url(#WQEfvoQAcpQgQgyjQQ4Hqb)" d="M21.586,14.414l3.268-3.268C24.947,11.053,25.074,11,25.207,11H43c1.105,0,2,0.895,2,2v26	c0,1.105-0.895,2-2,2H5c-1.105,0-2-0.895-2-2V15.5C3,15.224,3.224,15,3.5,15h16.672C20.702,15,21.211,14.789,21.586,14.414z"></path></svg> ${item.name} ${UI.display_time ? `<span class="badge bg-info float-end"> ` + item['modifiedTime'] + ` </span>` : ``}</a>`;
+            html += `<a style="color: ${UI.folder_text_color};" onclick="onSearchResultItemClick('${item['id']}')" data-bs-toggle="modal" data-bs-target="#SearchModel" class="countitems list-group-item list-group-item-action"><svg width="1.5em" height="1.5em" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><linearGradient id="WQEfvoQAcpQgQgyjQQ4Hqa" x1="24" x2="24" y1="6.708" y2="14.977" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#eba600"></stop><stop offset="1" stop-color="#c28200"></stop></linearGradient><path fill="url(#WQEfvoQAcpQgQgyjQQ4Hqa)" d="M24.414,10.414l-2.536-2.536C21.316,7.316,20.553,7,19.757,7L5,7C3.895,7,3,7.895,3,9l0,30	c0,1.105,0.895,2,2,2l38,0c1.105,0,2-0.895,2-2V13c0-1.105-0.895-2-2-2l-17.172,0C25.298,11,24.789,10.789,24.414,10.414z"></path><linearGradient id="WQEfvoQAcpQgQgyjQQ4Hqb" x1="24" x2="24" y1="10.854" y2="40.983" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffd869"></stop><stop offset="1" stop-color="#fec52b"></stop></linearGradient><path fill="url(#WQEfvoQAcpQgQgyjQQ4Hqb)" d="M21.586,14.414l3.268-3.268C24.947,11.053,25.074,11,25.207,11H43c1.105,0,2,0.895,2,2v26	c0,1.105-0.895,2-2,2H5c-1.105,0-2-0.895-2-2V15.5C3,15.224,3.224,15,3.5,15h16.672C20.702,15,21.211,14.789,21.586,14.414z"></path></svg> ${item.name} ${UI.display_time ? `<span class="badge bg-info float-end"> ` + item['modifiedTime'] + ` </span>` : ``}</a>`;
         } else {
             var is_file = true;
             var totalsize = totalsize + Number(item.size);
@@ -823,14 +823,14 @@ function append_search_result_to_list(files) {
       total_items = $list.find('.countitems').length;
       total_files = $list.find('.size_items').length;
       if (total_items == 0) {
-        $('#count').removeClass('d-none').find('.number').text("Empty Folder");
+        $('#count').removeClass('d-none').find('.number').text("No Results");
       } else if (total_items == 1) {
         $('#count').removeClass('d-none').find('.number').text(total_items + " item");
       } else {
         $('#count').removeClass('d-none').find('.number').text(total_items + " items");
       }
       if (total_files == 0) {
-        $('#count').removeClass('d-none').find('.totalsize').text("Zero Files");
+        $('#count').removeClass('d-none').find('.totalsize').text("Found Nothing");
       } else if (total_files == 1) {
         $('#count').removeClass('d-none').find('.totalsize').text(total_files + " File with Size " + total_size);
       } else {
@@ -873,11 +873,7 @@ function onSearchResultItemClick(file_id) {
       })
       .then(function(obj) {
         var href = `${obj.path}`;
-        if (href.endsWith("/")) {
-          var encodedUrl = href.replace(/#/g, '%23').replace(/\?/g, '%3F');
-        } else {
-          var encodedUrl = href.replace(/#/g, '%23').replace(/\?/g, '%3F') + '';
-        }
+        var encodedUrl = href.replace(new RegExp('#', 'g'), '%23').replace(new RegExp('\\?', 'g'), '%3F')
         title = `Result`;
         $('#SearchModelLabel').html(title);
         content = `<a class="btn btn-info" href="${encodedUrl}${can_preview ? '?a=view' : ''}">Open</a> <a class="btn btn-secondary" href="${encodedUrl}${can_preview ? '?a=view' : ''}" target="_blank">Open in New Tab</a>`;
@@ -1001,8 +997,32 @@ function file(path) {
 
 // Document display |zip|.exe/others direct downloads
 function file_others(name, encoded_name, size, url) {
-    var content = `
-            <div class="container"><br>
+  // Split the file path into parts
+  var path = window.location.pathname;
+  var pathParts = path.split('/');
+  
+  // Generate the navigation based on path parts
+  var navigation = '';
+  var new_path = '';
+  for (var i = 0; i < pathParts.length; i++) {
+    var part = pathParts[i];
+    new_path += part + '/';
+    if (part.length > 15) {
+      part = decodeURIComponent(part);
+      part = part.substring(0, 10) + '...';
+    }
+    navigation += '<a href="' + new_path + '" class="breadcrumb-item">' + part + '</a>';
+    console.log(navigation);
+  }
+
+  // Add the container and card elements
+  var content = `
+    <div class="container"><br>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          ${navigation}
+        </ol>
+      </nav>
             <div class="card text-center">
             <div class="card-body text-center">
               <div class="${UI.file_view_alert_class}" id="file_details" role="alert">${name}<br>${size}</div>
@@ -1042,12 +1062,38 @@ function file_code(name, encoded_name, size, bytes, url, ext) {
     "sh": "sh",
     "md": "Markdown",
   };
+
+  // Split the file path into parts
+  var path = window.location.pathname;
+  var pathParts = path.split('/');
+  
+  // Generate the navigation based on path parts
+  var navigation = '';
+  var new_path = '';
+  for (var i = 0; i < pathParts.length; i++) {
+    var part = pathParts[i];
+    new_path += part + '/';
+    if (part.length > 15) {
+      part = decodeURIComponent(part);
+      part = part.substring(0, 10) + '...';
+    }
+    navigation += '<a href="' + new_path + '" class="breadcrumb-item">' + part + '</a>';
+    console.log(navigation);
+  }
+
+  // Add the container and card elements
   var content = `
     <div class="container"><br>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          ${navigation}
+        </ol>
+      </nav>
       <div class="card text-center">
         <div class="card-body text-center">
           <div class="${UI.file_view_alert_class}" id="file_details" role="alert">${name}<br>${size}</div>
-        </div><div id="code_spinner"></div>`
+        </div>
+        <div id="code_spinner"></div>`
         + (UI.second_domain_for_dl ? `` : `<pre class="line-numbers language-markup" data-src="plugins/line-numbers/index.html" data-start="-5" style="white-space: pre-wrap; counter-reset: linenumber -6;" data-src-status="loaded" tabindex="0"><code id="editor"></code></pre>`) +
         `<div class="card-body">
           <div class="input-group mb-4">
@@ -1071,30 +1117,56 @@ function file_code(name, encoded_name, size, bytes, url, ext) {
         </div>
       </div>
     </div>`;
-    $('#content').html(content);
-    var spinner = '<div class="d-flex justify-content-center"><div class="spinner-border m-5" role="status"><span class="sr-only"></span></div></div>';
-    $("#code_spinner").html(spinner);
-    if (bytes <= 1024 * 1024 * 2) {
-      $.get(url, function(data) {
-        $('#editor').html($('<div/>').text(data).html());
-        $("#code_spinner").html("");
-        var code_type = "Text";
-        if (type[ext] != undefined) {
-          code_type = type[ext];
-        }
-      });
-    } else {
+
+  $('#content').html(content);
+  var spinner = '<div class="d-flex justify-content-center"><div class="spinner-border m-5" role="status"><span class="sr-only"></span></div></div>';
+  $("#code_spinner").html(spinner);
+  if (bytes <= 1024 * 1024 * 2) {
+    $.get(url, function(data) {
+      $('#editor').html($('<div/>').text(data).html());
       $("#code_spinner").html("");
-      $('#editor').html(`<div class="${UI.file_view_alert_class}" id="file_details" role="alert">File size is too large to preview, Max Limit is 2 MB</div>`);
-    }
+      var code_type = "Text";
+      if (type[ext] != undefined) {
+        code_type = type[ext];
+      }
+    });
+  } else {
+    $("#code_spinner").html("");
+    $('#editor').html(`<div class="${UI.file_view_alert_class}" id="file_details" role="alert">File size is too large to preview, Max Limit is 2 MB</div>`);
+  }
 }
+
 
 
 // Document display video |mp4|webm|avi|
 function file_video(name, encoded_name, size, poster, url) {
   var url_base64 = btoa(url);
+  // Split the file path into parts
+  var path = window.location.pathname;
+  var pathParts = path.split('/');
+  
+  // Generate the navigation based on path parts
+  var navigation = '';
+  var new_path = '';
+  for (var i = 0; i < pathParts.length; i++) {
+    var part = pathParts[i];
+    new_path += part + '/';
+    if (part.length > 15) {
+      part = decodeURIComponent(part);
+      part = part.substring(0, 10) + '...';
+    }
+    navigation += '<a href="' + new_path + '" class="breadcrumb-item">' + part + '</a>';
+    console.log(navigation);
+  }
+
+  // Add the container and card elements
   var content = `
     <div class="container text-center"><br>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          ${navigation}
+        </ol>
+      </nav>
       <div class="card text-center">
         <div class="text-center">
           <div class="${UI.file_view_alert_class}" id="file_details" role="alert">${name}<br>${size}</div>
@@ -1164,8 +1236,32 @@ function file_video(name, encoded_name, size, poster, url) {
 // File display Audio |mp3|flac|m4a|wav|ogg|
 function file_audio(name, encoded_name, size, url) {
   var url_base64 = btoa(url);
+  // Split the file path into parts
+  var path = window.location.pathname;
+  var pathParts = path.split('/');
+  
+  // Generate the navigation based on path parts
+  var navigation = '';
+  var new_path = '';
+  for (var i = 0; i < pathParts.length; i++) {
+    var part = pathParts[i];
+    new_path += part + '/';
+    if (part.length > 15) {
+      part = decodeURIComponent(part);
+      part = part.substring(0, 10) + '...';
+    }
+    navigation += '<a href="' + new_path + '" class="breadcrumb-item">' + part + '</a>';
+    console.log(navigation);
+  }
+
+  // Add the container and card elements
   var content = `
     <div class="container text-center"><br>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          ${navigation}
+        </ol>
+      </nav>
       <div class="card text-center">
         <div class="text-center">
           <div class="${UI.file_view_alert_class}" id="file_details" role="alert">${name}<br>${size}</div>
@@ -1234,8 +1330,32 @@ function file_audio(name, encoded_name, size, url) {
 
 // Document display pdf
 function file_pdf(name, encoded_name, size, url) {
+  // Split the file path into parts
+  var path = window.location.pathname;
+  var pathParts = path.split('/');
+  
+  // Generate the navigation based on path parts
+  var navigation = '';
+  var new_path = '';
+  for (var i = 0; i < pathParts.length; i++) {
+    var part = pathParts[i];
+    new_path += part + '/';
+    if (part.length > 15) {
+      part = decodeURIComponent(part);
+      part = part.substring(0, 10) + '...';
+    }
+    navigation += '<a href="' + new_path + '" class="breadcrumb-item">' + part + '</a>';
+    console.log(navigation);
+  }
+
+  // Add the container and card elements
   var content = `
-    <div class="container"><br>
+    <div class="container text-center"><br>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          ${navigation}
+        </ol>
+      </nav>
     <div class="card">
     <div class="card-body text-center">
     <div class="${UI.file_view_alert_class}" id="file_details" role="alert">${name}<br>${size}</div>
@@ -1275,8 +1395,32 @@ function file_pdf(name, encoded_name, size, url) {
 
 // image display
 function file_image(name, encoded_name, size, url) {
+  // Split the file path into parts
+  var path = window.location.pathname;
+  var pathParts = path.split('/');
+  
+  // Generate the navigation based on path parts
+  var navigation = '';
+  var new_path = '';
+  for (var i = 0; i < pathParts.length; i++) {
+    var part = pathParts[i];
+    new_path += part + '/';
+    if (part.length > 15) {
+      part = decodeURIComponent(part);
+      part = part.substring(0, 10) + '...';
+    }
+    navigation += '<a href="' + new_path + '" class="breadcrumb-item">' + part + '</a>';
+    console.log(navigation);
+  }
+
+  // Add the container and card elements
   var content = `
-    <div class="container"><br>
+    <div class="container text-center"><br>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          ${navigation}
+        </ol>
+      </nav>
       <div class="card">
         <div class="card-body text-center">
           <div class="${UI.file_view_alert_class}" id="file_details" role="alert">${name}<br>${size}</div>
