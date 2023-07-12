@@ -60,16 +60,15 @@
 			  "protect_file_link": false,
 		  }
 		]};
-		const crypto_base_key = "3225f86e99e205347b4310e437253bfd" // Example 256 bit key used.
-		const encrypt_iv = new Uint8Array([247,254,106,195,32,148,131,244,222,133,26,182,20,138,215,81]); // Example 128 bit IV used.
-		const auth0 = {
+	const crypto_base_key = "3225f86e99e205347b4310e437253bfd" // Example 256 bit key used.
+	const encrypt_iv = new Uint8Array([247,254,106,195,32,148,131,244,222,133,26,182,20,138,215,81]); // Example 128 bit IV used.
+	const auth0 = {
 			  domain: "", // Tenent Domain from auth0.com website
 			  clientId: "", // App Client ID from auth0.com website
 			  clientSecret: "", // App Client Secret from auth0.com website
 			  callbackUrl: "", // your domain with /auth at the end. eg. https://example.com/auth, add this in auth0.com too
 			  logoutUrl: "", // your domain logout page eg. https://example.com, add this in auth0.com too
-		}
-		const drive_list = authConfig.roots.map(it => it.id)
+	}
 	/*
 	███████╗██████╗░██╗████████╗  ████████╗██╗░░██╗███████╗░██████╗███████╗
 	██╔════╝██╔══██╗██║╚══██╔══╝  ╚══██╔══╝██║░░██║██╔════╝██╔════╝██╔════╝
@@ -1689,6 +1688,7 @@
 				//console.log(p_ids)
 				if (p_ids && p_ids.length > 0) {
 					const first_p_id = p_ids[0];
+					const drive_list = authConfig.roots.map(it => it.id)
 					if (drive_list.includes(first_p_id)) {
 						meet_top = true;
 						drive_index_no = drive_list.indexOf(first_p_id);

@@ -969,29 +969,6 @@ function file(path) {
         </div>`;
         $("#content").html(content);
       });
-
-
-
-    /*switch (ext) {
-      case "html": case "php": case "css": case "go": case "java": case "js": case "json": case "txt": case "sh": case "md":
-        file_others(path);
-        break;
-      case "mp4": case "webm": case "avi": case "mpg": case "mpeg": case "mkv": case "rm": case "rmvb": case "mov": case "wmv": case "asf": case "ts": case "flv":
-        file_video(path);
-        break;
-      case "mp3": case "flac": case "wav": case "ogg": case "m4a": case "aac":
-        file_audio(path);
-        break;
-      case "bmp": case "jpg": case "jpeg": case "png": case "gif":
-        file_image(path);
-        break;
-      case "pdf":
-        file_pdf(path);
-        break;
-      default:
-        file_others(path);
-        break;
-    }*/
 }
   
 
@@ -1011,8 +988,8 @@ function file_others(name, encoded_name, size, url) {
       part = decodeURIComponent(part);
       part = part.substring(0, 10) + '...';
     }
+    if (part == '') { part = 'Home'}
     navigation += '<a href="' + new_path + '" class="breadcrumb-item">' + part + '</a>';
-    console.log(navigation);
   }
 
   // Add the container and card elements
@@ -1077,8 +1054,8 @@ function file_code(name, encoded_name, size, bytes, url, ext) {
       part = decodeURIComponent(part);
       part = part.substring(0, 10) + '...';
     }
+    if (part == '') { part = 'Home'}
     navigation += '<a href="' + new_path + '" class="breadcrumb-item">' + part + '</a>';
-    console.log(navigation);
   }
 
   // Add the container and card elements
@@ -1155,8 +1132,8 @@ function file_video(name, encoded_name, size, poster, url) {
       part = decodeURIComponent(part);
       part = part.substring(0, 10) + '...';
     }
+    if (part == '') { part = 'Home'}
     navigation += '<a href="' + new_path + '" class="breadcrumb-item">' + part + '</a>';
-    console.log(navigation);
   }
 
   // Add the container and card elements
@@ -1250,8 +1227,8 @@ function file_audio(name, encoded_name, size, url) {
       part = decodeURIComponent(part);
       part = part.substring(0, 10) + '...';
     }
+    if (part == '') { part = 'Home'}
     navigation += '<a href="' + new_path + '" class="breadcrumb-item">' + part + '</a>';
-    console.log(navigation);
   }
 
   // Add the container and card elements
@@ -1344,8 +1321,8 @@ function file_pdf(name, encoded_name, size, url) {
       part = decodeURIComponent(part);
       part = part.substring(0, 10) + '...';
     }
+    if (part == '') { part = 'Home'}
     navigation += '<a href="' + new_path + '" class="breadcrumb-item">' + part + '</a>';
-    console.log(navigation);
   }
 
   // Add the container and card elements
@@ -1409,8 +1386,8 @@ function file_image(name, encoded_name, size, url) {
       part = decodeURIComponent(part);
       part = part.substring(0, 10) + '...';
     }
+    if (part == '') { part = 'Home'}
     navigation += '<a href="' + new_path + '" class="breadcrumb-item">' + part + '</a>';
-    console.log(navigation);
   }
 
   // Add the container and card elements
