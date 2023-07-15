@@ -131,10 +131,17 @@
 		"render_head_md": true, // Render Head.md
 		"render_readme_md": true, // Render Readme.md
 		"display_drive_link": false, // This will add a Link Button to Google Drive of that particular file.
-		"videojs_version": "8.3.0", // Change videojs version in future when needed.
 		"unauthorized_owner_link": "https://telegram.dog/Telegram", // Unauthorized Error Page Link to Owner
 		"unauthorized_owner_email": "abuse@telegram.org", // Unauthorized Error Page Owner Email
 	};
+
+	const player_config = {
+		"player": "jwplayer", // videojs || plyr || dplayer || jwplayer
+		"videojs_version": "8.3.0", // Change videojs version in future when needed.
+		"plyr_io_version": "3.7.8",
+		"jwplayer_version": "8.16.2",
+		"shaka_player_version": "4.3.7",
+	}
 	
 	// DON'T TOUCH BELOW THIS UNLESS YOU KNOW WHAT YOU'RE DOING
 	var gds = [];
@@ -153,6 +160,7 @@
 		window.MODEL = JSON.parse('${JSON.stringify(model)}');
 		window.current_drive_order = ${current_drive_order};
 		window.UI = JSON.parse('${JSON.stringify(uiConfig)}');
+		window.player_config = JSON.parse('${JSON.stringify(player_config)}');
 	  </script>
 	  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 	  <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.0.0/dist/${uiConfig.theme}/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
