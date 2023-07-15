@@ -139,8 +139,7 @@
 		"player": "jwplayer", // videojs || plyr || dplayer || jwplayer
 		"videojs_version": "8.3.0", // Change videojs version in future when needed.
 		"plyr_io_version": "3.7.8",
-		"jwplayer_version": "8.16.2",
-		"shaka_player_version": "4.3.7",
+		"jwplayer_version": "8.16.2"
 	}
 	
 	// DON'T TOUCH BELOW THIS UNLESS YOU KNOW WHAT YOU'RE DOING
