@@ -1,6 +1,6 @@
 	// add multiple serviceaccounts as {}, {}, {}, random account will be selected by each time app is opened.
 
-	const local_testing = true
+	const local_testing = false
 
 	const serviceaccounts = [
 		{
@@ -38,19 +38,24 @@
 		"direct_link_protection": false, // protects direct links with Display UI
 		"disable_anonymous_download": false, // disables direct links and hides download button in UI
 		"lock_folders": false, // keeps folders and search locked if auth in on, and allows individual file view
-		"enable_auth0_com": false, // follow guide to add auth0.com to secure index with powerful login based system
-		"enable_login": true, // set to true if you want to add login system
-		"login_days" : 7, // days to keep logged in
 		"file_link_expiry" : 7, // expire file link in set number of days
 		"search_all_drives": true, // search all of your drives instead of current drive if set to true
+		"enable_login": true, // set to true if you want to add login system
+		"enable_signup": true, // set to true if you want to add signup system
+		"enable_social_login": true, // set to true if you want to add social login system
+		"google_client_id_for_login": "746239575955-rkmpc4e2c5t9d2gcl9h9t9s5ttga6clg.apps.googleusercontent.com", // Google Client ID for Login
+		"google_client_secret_for_login": "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", // Google Client Secret for Login
+		"redirect_domain": "https://google-drive-index.hashhackersapi.workers.dev", // Domain for login redirect eg. https://example.com
+		"login_database": "KV", // KV or Local or Mongodb
+		"login_days" : 7, // days to keep logged in
 		"users_list": [
 			{
-				"username": "admin",
+				"username": "admin@hashhackers.com",
 				"password": "admin",
 			},
 			{
-				"username": "admin1",
-				"password": "admin1",
+				"username": "admin",
+				"password": "admin",
 			}
 		],
 		"roots":[
@@ -62,13 +67,7 @@
 		]};
 	const crypto_base_key = "3225f86e99e205347b4310e437253bfd" // Example 256 bit key used.
 	const encrypt_iv = new Uint8Array([247,254,106,195,32,148,131,244,222,133,26,182,20,138,215,81]); // Example 128 bit IV used.
-	const auth0 = {
-			  domain: "", // Tenent Domain from auth0.com website
-			  clientId: "", // App Client ID from auth0.com website
-			  clientSecret: "", // App Client Secret from auth0.com website
-			  callbackUrl: "", // your domain with /auth at the end. eg. https://example.com/auth, add this in auth0.com too
-			  logoutUrl: "", // your domain logout page eg. https://example.com, add this in auth0.com too
-	}
+
 	/*
 	███████╗██████╗░██╗████████╗  ████████╗██╗░░██╗███████╗░██████╗███████╗
 	██╔════╝██╔══██╗██║╚══██╔══╝  ╚══██╔══╝██║░░██║██╔════╝██╔════╝██╔════╝
@@ -99,7 +98,6 @@
 		"nav_link_1": "Home", // change navigation link name
 		"nav_link_3": "Current Path", // change navigation link name
 		"nav_link_4": "Contact", // change navigation link name
-		"show_logout_button": false, // shows logout button if auth0.com is active
 		"fixed_footer": false, // If you want the footer to be flexible or fixed.
 		"hide_footer": true, // hides the footer from site entirely.
 		"header_style_class": "navbar-dark bg-primary", // navbar-dark bg-primary || navbar-dark bg-dark || navbar-light bg-light
@@ -124,7 +122,6 @@
 		"disable_video_download": false, // Remove Download, Copy Button on Videos
 		"allow_selecting_files" : true, // Disable Selecting Files to Download in Bulk
 		"second_domain_for_dl": false, // If you want to display other URL for Downloading to protect your main domain.
-		"downloaddomain": domain_for_dl, // Ignore this and set domains at top of this page after service accounts.
 		"poster": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.3/images/poster.jpg", // Video poster URL or see Readme to how to load from Drive
 		"audioposter": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.3/images/music.jpg", // Video poster URL or see Readme to how to load from Drive
 		"jsdelivr_cdn_src": "https://cdn.jsdelivr.net/npm/@googledrive/index", // If Project is Forked, then enter your GitHub repo
@@ -133,6 +130,8 @@
 		"display_drive_link": false, // This will add a Link Button to Google Drive of that particular file.
 		"unauthorized_owner_link": "https://telegram.dog/Telegram", // Unauthorized Error Page Link to Owner
 		"unauthorized_owner_email": "abuse@telegram.org", // Unauthorized Error Page Owner Email
+		"downloaddomain": domain_for_dl, // Ignore this and set domains at top of this page after service accounts.
+		"show_logout_button": authConfig.enable_login ? true : false, // set to true if you want to add logout button
 	};
 
 	const player_config = {
@@ -187,7 +186,6 @@
 			  window.UI = JSON.parse('${JSON.stringify(uiConfig)}');
 		  </script>
 		  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-		  <link rel="stylesheet" href="https://cdn.plyr.io/${uiConfig.plyr_io_version}/plyr.css" />
 		  <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.0.0/dist/${uiConfig.theme}/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 		  <style>a{color:${uiConfig.css_a_tag_color};}p{color:${uiConfig.css_p_tag_color};}</style>
 	   </head>
@@ -278,7 +276,7 @@
 		  <style id="compiled-css" type="text/css">.login,.image{min-height:100vh}.bg-image{background-image:url('https://cdn.jsdelivr.net/gh/logingateway/images@1.0/background.jpg');background-size:cover;background-position:center center}#error-message{display:none}</style>
 		  <link rel="preconnect" href="https://fonts.googleapis.com">
 		  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Palette+Mosaic&display=swap" rel="stylesheet">
+		  <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
 		  <style>
 			 .logo {
 			 font-family: 'Orbitron', sans-serif;
@@ -309,7 +307,12 @@
 						  window.location.reload();
 						}
 					  });
-				  });				  
+				});	
+				const queryparams = new URLSearchParams(window.location.search);
+				if (queryparams.get('error')) {
+				   document.getElementById("error-message").style.display = "block";
+				   document.getElementById("error-message").innerHTML = queryparams.get('error');
+				}		  
 			 });
 		  </script>
 	   </head>
@@ -322,8 +325,7 @@
 					  <div class="container">
 						 <div class="row">
 							<div class="col-lg-10 col-xl-7 mx-auto">
-							   <h3 class="logo">${authConfig.siteName}</h3>
-							   <p class="text-muted mb-4">Requires Common Sense...</p>
+							   <h3 class="logo text-center mb-3">${authConfig.siteName}</h3>
 							   <div id="error-message" class="alert alert-danger"></div>
 							   <form onsubmit="return false;" method="post">
 									<p id="error" style="color:red;"></p>
@@ -334,13 +336,12 @@
 									 <input id="password" type="password" placeholder="Password" class="form-control rounded-pill border-0 shadow-sm px-4 text-primary" required>
 								  </div>
 								  <button id="btn-login" type="submit" class="btn btn-primary btn-block text-uppercase mb-2 rounded-pill shadow-sm">Login</button>
-								  <hr class="solid">
-								  <center>
-									 <p id="hidereset">
-										<marquee>No Signup Process Available, contact your administrator for id and password at ${uiConfig.unauthorized_owner_email} or visit ${uiConfig.unauthorized_owner_link}.</marquee>
-									 </p>
-								  </center>
+								  ${authConfig.enable_signup ? `<a href="/signup" class="btn btn-outline-danger btn-block text-uppercase mb-2 rounded-pill shadow-sm">Signup</a>` : ''}
 							   </form>
+							   <hr class="solid">
+							   ${authConfig.enable_social_login ? `<div id="allsociallogins" style="display:block;">
+								<a href="https://accounts.google.com/o/oauth2/v2/auth?client_id=`+authConfig.google_client_id_for_login+`&redirect_uri=`+authConfig.redirect_domain+`/google_callback&response_type=code&scope=email%20profile&response_mode=query" id="btn-google" class="btn btn-block btn-social btn-google"><span class="fa fa-google"></span> Sign in with Google</a>
+							   </div>` : ''}
 							</div>
 						 </div>
 					  </div>
@@ -356,6 +357,102 @@
 	   </body>
 	</html>`
 	
+	const signup_html = `<html>
+	   <head>
+		  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		  <title>Sign UP - ${authConfig.siteName}</title>
+		  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		  <meta name="robots" content="noindex, nofollow">
+		  <meta name="googlebot" content="noindex, nofollow">
+		  <meta name="viewport" content="width=device-width, initial-scale=1">
+		  <link rel="icon" href="${uiConfig.favicon}">
+		  <script type="text/javascript" src="//code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+		  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+		  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+		  <style id="compiled-css" type="text/css">.login,.image{min-height:100vh}.bg-image{background-image:url('https://cdn.jsdelivr.net/gh/logingateway/images@1.0/background.jpg');background-size:cover;background-position:center center}#error-message{display:none}</style>
+		  <link rel="preconnect" href="https://fonts.googleapis.com">
+		  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		  <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+		  <style>
+			 .logo {
+			 font-family: 'Orbitron', sans-serif;
+			 color: #007bff;
+			 }
+		  </style>
+		  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+		  <script>
+			 $(document).ready(function(){
+				$("#btn-login").click(function() {
+					const formData = new URLSearchParams();
+					formData.append('username', $("#email").val());
+					formData.append('password', $("#password").val());
+				  
+					fetch('/signup_api', {
+					  method: 'POST',
+					  headers: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					  },
+					  body: formData.toString()
+					})
+					  .then(res => res.json())
+					  .then(data => {
+						if (!data.ok) {
+						  document.getElementById("error-message").style.display = "block";
+						  document.getElementById("error-message").innerHTML = "Invalid Credentials";
+						} else {
+						  window.location.reload();
+						}
+					  });
+				});	
+				const queryparams = new URLSearchParams(window.location.search);
+				if (queryparams.get('error')) {
+				   document.getElementById("error-message").style.display = "block";
+				   document.getElementById("error-message").innerHTML = queryparams.get('error');
+				}		  
+			 });
+		  </script>
+	   </head>
+	   <body>
+		  <div class="container-fluid">
+			 <div class="row no-gutter">
+				<div class="col-md-6 d-none d-md-flex bg-image"></div>
+				<div class="col-md-6 bg-light">
+				   <div class="login d-flex align-items-center py-5">
+					  <div class="container">
+						 <div class="row">
+							<div class="col-lg-10 col-xl-7 mx-auto">
+							   <h3 class="logo text-center mb-3">${authConfig.siteName}</h3>
+							   <div id="error-message" class="alert alert-danger"></div>
+							   <form onsubmit="return false;" method="post">
+									<p id="error" style="color:red;"></p>
+								  <div class="form-group mb-3">
+									 <input id="email" type="text" placeholder="Username" autofocus="" class="form-control rounded-pill border-0 shadow-sm px-4" required>
+								  </div>
+								  <div class="form-group mb-3">
+									 <input id="password" type="password" placeholder="Password" class="form-control rounded-pill border-0 shadow-sm px-4 text-primary" required>
+								  </div>
+								  <button id="btn-login" type="submit" class="btn btn-primary btn-block text-uppercase mb-2 rounded-pill shadow-sm"SIGNUP</button>
+								  <a href="/login" class="btn btn-outline-danger btn-block text-uppercase mb-2 rounded-pill shadow-sm">LOGIN</a>
+							   </form>
+							   <hr class="solid">
+							   ${authConfig.enable_social_login ? `<div id="allsociallogins" style="display:block;">
+								<a href="https://accounts.google.com/o/oauth2/v2/auth?client_id=`+authConfig.google_client_id_for_login+`&redirect_uri=`+authConfig.redirect_domain+`/google_callback&response_type=code&scope=email%20profile&response_mode=query" id="btn-google" class="btn btn-block btn-social btn-google"><span class="fa fa-google"></span> Sign in with Google</a>
+							   </div>` : ''}
+							</div>
+						 </div>
+					  </div>
+				   </div>
+				   <center>
+					  <p>
+						 &copy; <script>document.write(new Date().getFullYear())</script> ${uiConfig.company_name}
+					  </p>
+				   </center>
+				</div>
+			 </div>
+		  </div>
+	   </body>
+	</html>`
+
 	const not_found = `<!DOCTYPE html>
 	<html lang=en>
 	  <meta charset=utf-8>
@@ -546,302 +643,7 @@
 			}
 		}
 	};
-	
-	// auth0.com functions
-	const AUTH0_DOMAIN  = auth0.domain
-	const AUTH0_CLIENT_ID  = auth0.clientId
-	const AUTH0_CLIENT_SECRET = auth0.clientSecret
-	const AUTH0_CALLBACK_URL = auth0.callbackUrl
-	const AUTH0_LOGOUT_URL = auth0.logoutUrl
-	const SALT = `keys565`
-	
-	const cookieKey = 'AUTH0-AUTH'
-	
-	const generateStateParam = async () => {
-	  if(authConfig['enable_auth0_com']){
-		const resp = await fetch('https://csprng.xyz/v1/api')
-		const { Data: state } = await resp.json()
-		await AUTH_STORE.put(`state-${state}`, true, { expirationTtl: 60 })
-		return state
-	  }
-	}
-	
-	const exchangeCode = async code => {
-	  const body = JSON.stringify({
-		grant_type: 'authorization_code',
-		client_id: auth0.clientId,
-		client_secret: auth0.clientSecret,
-		code,
-		redirect_uri: auth0.callbackUrl,
-	  })
-	
-	  return persistAuth(
-		await fetch(AUTH0_DOMAIN  + '/oauth/token', {
-		  method: 'POST',
-		  headers: { 'content-type': 'application/json' },
-		  body,
-		}),
-	  )
-	}
-	
-	// https://github.com/pose/webcrypto-jwt/blob/master/index.js
-	const decodeJWT = function(token) {
-	  var output = token
-		.split('.')[1]
-		.replace(/-/g, '+')
-		.replace(/_/g, '/')
-	  switch (output.length % 4) {
-		case 0:
-		  break
-		case 2:
-		  output += '=='
-		  break
-		case 3:
-		  output += '='
-		  break
-		default:
-		  throw 'Illegal base64url string!'
-	  }
-	
-	  const result = atob(output)
-	
-	  try {
-		return decodeURIComponent(escape(result))
-	  } catch (err) {
-		console.log(err)
-		return result
-	  }
-	}
-	
-	const validateToken = token => {
-	  try {
-		const dateInSecs = d => Math.ceil(Number(d) / 1000)
-		const date = new Date()
-	
-		let iss = token.iss
-	
-		// ISS can include a trailing slash but should otherwise be identical to
-		// the AUTH0_DOMAIN, so we should remove the trailing slash if it exists
-		iss = iss.endsWith('/') ? iss.slice(0, -1) : iss
-	
-		if (iss !== AUTH0_DOMAIN) {
-		  throw new Error(
-			`Token iss value (${iss}) doesn't match AUTH0_DOMAIN (${AUTH0_DOMAIN})`,
-		  )
-		}
-	
-		if (token.aud !== AUTH0_CLIENT_ID) {
-		  throw new Error(
-			`Token aud value (${token.aud}) doesn't match AUTH0_CLIENT_ID (${AUTH0_CLIENT_ID})`,
-		  )
-		}
-	
-		if (token.exp < dateInSecs(date)) {
-		  throw new Error(`Token exp value is before current time`)
-		}
-	
-		// Token should have been issued within the last day
-		date.setDate(date.getDate() - 1)
-		if (token.iat < dateInSecs(date)) {
-		  throw new Error(`Token was issued before one day ago and is now invalid`)
-		}
-	
-		return true
-	  } catch (err) {
-		console.log(err.message)
-		return false
-	  }
-	}
-	
-	const persistAuth = async exchange => {
-	  const body = await exchange.json()
-	
-	  if (body.error) {
-		throw new Error(body.error)
-	  }
-	
-	  const date = new Date()
-	  date.setDate(date.getDate() + 1)
-	
-	  const decoded = JSON.parse(decodeJWT(body.id_token))
-	  const validToken = validateToken(decoded)
-	  if (!validToken) {
-		return { status: 401 }
-	  }
-	
-	  const text = new TextEncoder().encode(`${SALT}-${decoded.sub}`)
-	  const digest = await crypto.subtle.digest({ name: 'SHA-256' }, text)
-	  const digestArray = new Uint8Array(digest)
-	  const id = btoa(String.fromCharCode.apply(null, digestArray))
-	
-	  await AUTH_STORE.put(id, JSON.stringify(body))
-	
-	  const headers = {
-		Location: '/',
-		'Set-cookie': `${cookieKey}=${id}; Secure; HttpOnly; SameSite=Lax; Expires=${date.toUTCString()}`,
-	  }
-	
-	  return { headers, status: 302 }
-	}
-	
-	const redirectUrl = state =>
-	  `${auth0.domain}/authorize?response_type=code&client_id=${
-		auth0.clientId
-	  }&redirect_uri=${
-		auth0.callbackUrl
-	  }&scope=openid%20profile%20email&state=${encodeURIComponent(state)}`
-	
-	const handleRedirect = async event => {
-	  const url = new URL(event.request.url)
-	
-	  const state = url.searchParams.get('state')
-	  if (!state) {
-		return null
-	  }
-	
-	  const storedState = await AUTH_STORE.get(`state-${state}`)
-	  if (!storedState) {
-		return null
-	  }
-	
-	  const code = url.searchParams.get('code')
-	  if (code) {
-		return exchangeCode(code)
-	  }
-	
-	  return null
-	}
-	
-	function getCookie(cookie,name) {
-		var nameEQ = name + "=";
-		var ca = cookie.split(';');
-		for(var i=0;i < ca.length;i++) {
-			var c = ca[i];
-			while (c.charAt(0)==' ') c = c.substring(1,c.length);
-			if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-		}
-		return null;
-	}
-	
-	async function getAssetFromKV(event){
-	  return null
-	}
-	const verify = async event => {
-	  const cookieHeader = event.request.headers.get('Cookie')
-	
-	  if (cookieHeader && cookieHeader.includes(cookieKey)) {
-		// cookieHeader.includes(cookieKey)
-		// throw new Error(getCookie(cookieHeader,cookieKey))
-		// const cookies = cookie.parse(cookieHeader)
-		if (!getCookie(cookieHeader,cookieKey)) return {}
-		const sub = getCookie(cookieHeader,cookieKey)
-	
-		const kvData = await AUTH_STORE.get(sub)
-		if (!kvData) {
-		  return {}
-		  //throw new Error('Unable to find authorization data')
-		}
-	
-		let kvStored
-		try {
-		  kvStored = JSON.parse(kvData)
-		} catch (err) {
-		  throw new Error('Unable to parse auth information from Workers KV')
-		}
-	
-		const { access_token: accessToken, id_token: idToken } = kvStored
-		const userInfo = JSON.parse(decodeJWT(idToken))
-		return { accessToken, idToken, userInfo }
-	  }
-	  return {}
-	}
-	
-	const authorize = async event => {
-	  const authorization = await verify(event)
-	  if (authorization.accessToken) {
-		return [true, { authorization }]
-	  } else {
-		const state = await generateStateParam()
-		return [false, { redirectUrl: redirectUrl(state) }]
-	  }
-	}
-	
-	// const logout = event => {
-	//   const cookieHeader = event.request.headers.get('Cookie')
-	//   if (cookieHeader && cookieHeader.includes(cookieKey)) {
-	//     return {
-	//       headers: {
-	//         'Set-cookie': `${cookieKey}=""; HttpOnly; Secure; SameSite=Lax;`,
-	//       },
-	//     }
-	//   }
-	//   return {}
-	// }
-	
-	const hydrateState = (state = {}) => ({
-	  element: el => {
-		el.setInnerContent(JSON.stringify(state))
-	  },
-	})
-	
-	
-	// addEventListener('fetch', event => event.respondWith(handleRequest(event)))
-	
-	// see the readme for more info on what these config options do!
-	const config = {
-	  // opt into automatic authorization state hydration
-	  hydrateState: true,
-	  // return responses at the edge
-	  originless: true,
-	}
-	
-	async function loginHandleRequest(event) {
-	  try {
-		let request = event.request
-	
-		const [authorized, { authorization, redirectUrl }] = await authorize(event)
-	
-		const url = new URL(event.request.url)
-		if (url.pathname === '/auth') {
-		  const authorizedResponse = await handleRedirect(event)
-		  if (!authorizedResponse) {
-			let redirectHeaders = new Headers()
-			redirectHeaders.set('Refresh', `1; url=${auth0.logoutUrl}`)
-			redirectHeaders.set('Set-cookie', `${cookieKey}=""; HttpOnly; Secure; SameSite=Lax;`)
-			return new Response('Unauthorized - Redirecting', { status: 302, headers: redirectHeaders })
-	
-		  }
-		  response = new Response(request.body, {
-			request,
-			...authorizedResponse,
-		  })
-		  return response
-		}
-	
-		if (!authorized) {
-		  return Response.redirect(redirectUrl)
-		}
-	
-		if (url.pathname === '/logout') {
-	
-		  let redirectHeaders = new Headers()
-		  redirectHeaders.set('Location', `${auth0.domain}/v2/logout?client_id=${auth0.clientId}&returnTo=${auth0.logoutUrl}`)
-		  redirectHeaders.set('Set-cookie', `${cookieKey}=""; HttpOnly; Secure; SameSite=Lax;`)
-	
-		  return new Response('', {
-			  status: 302,
-			  headers: redirectHeaders
-			})
-		}
-	
-		return null
-		
-	  } catch (err) {
-		return new Response(err.toString())
-	  }
-	}
-	//end auth0.com function
-	
+
 	// web crypto functions
 	async function encryptString(string, iv) {
 		const key = await crypto.subtle.importKey(
@@ -915,8 +717,6 @@
 
 // start handlerequest
 	async function handleRequest(request, event) {
-		//var loginCheck = await loginHandleRequest(event)
-		//if(authConfig['enable_auth0_com'] && loginCheck != null){return loginCheck}
 		const region = request.headers.get('cf-ipcountry');
 		const asn_servers = request.cf.asn;
 		const referer = request.headers.get("Referer");
@@ -937,10 +737,94 @@
 				}
 			});
 		}
+		if (path == '/logout') {
+			let response = new Response("", {
+			});
+			response.headers.set('Set-Cookie', `session=; HttpOnly; Secure; SameSite=Lax;`);
+			response.headers.set("Refresh", "1; url=/?error=Logged Out");
+			return response;
+		}
 		if (authConfig.enable_login) {
+			const login_database = authConfig.login_database.toLowerCase();
 			//console.log("Login Enabled")
 			if (path == '/download.aspx' && !authConfig.disable_anonymous_download) {
 				console.log("Anonymous Download")
+			} else if (path === '/google_callback' && request.method === 'GET') {		
+				// Extract the authorization code from the query parameters
+				const code = url.searchParams.get('code')
+				if (!code) {
+					return new Response('Missing authorization code.', { status: 400 });
+				}
+		
+				// Use the authorization code to obtain access token and ID token		
+				const response = await fetch('https://oauth2.googleapis.com/token', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+					},
+					body: new URLSearchParams({
+						code,
+						client_id: authConfig.google_client_id_for_login,
+						client_secret: authConfig.google_client_secret_for_login,
+						redirect_uri: authConfig.redirect_domain + '/google_callback',
+						grant_type: 'authorization_code',
+					}),
+				});
+		
+				const data = await response.json();
+		
+				if (response.ok) {
+					const idToken = data.id_token;
+					const decodedIdToken = decodeJwtToken(idToken);
+					const email = decodedIdToken.email;		
+					let kv_key
+					// Check if user email exist in the list
+					if (login_database == 'kv') {
+						kv_key = await ENV.get(email);
+						if (kv_key == null) {
+							var user_found = false;
+						} else {
+							var user_found = true;
+						}
+					} else if (login_database == 'mongodb') {
+						// to be implemented later
+					} else { // local database
+						for (i = 0; i < authConfig.users_list.length; i++) {
+							if (authConfig.users_list[i].username == username && authConfig.users_list[i].password == password) {
+								var user_found = true;
+								break;
+							}
+						}
+					}
+					if (!user_found) {
+						let response = new Response('Invalid User!', {
+						});
+						response.headers.set('Set-Cookie', `session=; HttpOnly; Secure; SameSite=Lax;`);
+						response.headers.set("Refresh", "1; url=/?error=Invalid User");
+						return response;
+					}
+					const current_time = Date.now(); // this results in a timestamp of the number of milliseconds since epoch.
+					const session_time = current_time + 86400000 * authConfig.login_days;
+					const encryptedSession = `${await encryptString(email)}|${await encryptString(kv_key)}|${await encryptString(session_time.toString())}`;
+					// reload page with cookie
+					let response = new Response("", {
+						status: 200,
+						headers: {
+							'Content-Type': 'application/json; charset=utf-8',
+							'Set-Cookie': `session=${encryptedSession}; path=/; HttpOnly; Secure; SameSite=Lax`,
+							'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+							'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
+							'Refresh': '0; url=/',
+						}
+					});
+					return response;
+				} else {
+					let response = new Response('Invalid Token!', {
+					});
+					response.headers.set('Set-Cookie', `session=; HttpOnly; Secure; SameSite=Lax;`);
+					response.headers.set("Refresh", "1; url=/?error=Invalid Token");
+					return response;
+				}
 			} else if (request.method === 'GET') {
 				//console.log("GET Request")
 				const cookie = request.headers.get('cookie');
@@ -952,8 +836,8 @@
 					const username = await decryptString(session.split('|')[0]);
 					const password = await decryptString(session.split('|')[1]);
 					const session_time = await decryptString(session.split('|')[2]);
+					console.log("User: " + username + " | Password: " + password + " | Session Time: " + session_time)
 					const current_time = Date.now(); // this results in a timestamp of the number of milliseconds since epoch.
-					const usersMap = {};
 					if (Number(session_time) < current_time) {
 						let response = new Response('Session Expired!', {
 							headers: {
@@ -963,37 +847,90 @@
 						response.headers.set("Refresh", "1; url=#");
 						return response;
 					}
-					for (const user of authConfig.users_list) {
-						usersMap[user.username] = username;
-						//console.log(user.username, username)
-					  }
-					if (usersMap[username] === password) {
-						//console.log("Logged In")
+					if (login_database == 'kv') {
+						const kv_key = await ENV.get(username);
+						if (kv_key == null) {
+							var user_found = false;
+						} else {
+							if (kv_key == password) {
+								var user_found = true;
+							} else {
+								var user_found = false;
+							}
+						}
+					} else if (login_database == 'mongodb') {
+						// to be implemented later
+					} else { // local database
+						for (i = 0; i < authConfig.users_list.length; i++) {
+							if (authConfig.users_list[i].username == username && authConfig.users_list[i].password == password) {
+								var user_found = true;
+								break;
+							}
+						}
+					}
+					if (user_found) {
+						console.log("User Found")
 					} else {
 						let response = new Response('Invalid User!', {
 						});
-						response.headers.set("Refresh", "1; url=/");
+						response.headers.set('Set-Cookie', `session=; HttpOnly; Secure; SameSite=Lax;`);
+						response.headers.set("Refresh", "1; url=/?error=Invalid User");
 						return response;
 					}
-				} else {
-					return new Response(login_html, {
+				} else if (path == '/signup' && enable_signup) {
+					return new Response(signup_html, {
 						status: 200,
 						headers: {
-							'Content-Type': 'text/html; charset=utf-8'
+							'Content-Type': 'application/json; charset=utf-8',
+							'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+							'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
 						}
 					});
+				} else {
+					return login()
 				}
 			} else if (authConfig.enable_login && request.method === 'POST' && path === '/login') {
 				console.log("POST Request for Login")
 				const formdata = await request.formData();
 				const username = formdata.get('username');
 				const password = formdata.get('password');
-				const usersMap = {};
-				for (const user of authConfig.users_list) {
-				  usersMap[user.username] = username;
-				  console.log(user.username, username)
+				if (login_database == 'kv') {
+					const kv_key = await ENV.get(username);
+					if (kv_key == null) {
+						var user_found = false;
+					} else {
+						if (kv_key == password) {
+							var user_found = true;
+						} else {
+							var user_found = false;
+						}
+					}
+				} else if (login_database == 'mongodb') {
+					// to be implemented later
+				} else { // local database
+					for (i = 0; i < authConfig.users_list.length; i++) {
+						if (authConfig.users_list[i].username == username && authConfig.users_list[i].password == password) {
+							var user_found = true;
+							break;
+						}
+					}
 				}
-				if (usersMap[username] === password) {
+
+				if (!user_found) {
+					const jsonResponse = {
+						ok: false,
+					}
+					let response = new Response(JSON.stringify(jsonResponse), {
+						status: 200,
+						headers: {
+							'Content-Type': 'application/json; charset=utf-8',
+							'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+							'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
+						}
+					});
+					return response;
+				}
+				if (user_found) {
 					const current_time = Date.now(); // this results in a timestamp of the number of milliseconds since epoch.
 					const session_time = current_time + 86400000 * authConfig.login_days;
 					const encryptedSession = `${await encryptString(username)}|${await encryptString(password)}|${await encryptString(session_time.toString())}`;
@@ -1023,6 +960,35 @@
 						}
 					});
 					return response;
+				}
+			} else if (authConfig.enable_signup && request.method === 'POST' && path === '/signup_api') {
+				if (login_database == 'kv') {
+					const formdata = await request.formData();
+					const username = formdata.get('username');
+					const password = formdata.get('password');
+					if (username == null || password == null) {
+						return new Response("Username or Password cannot be null", {
+							status: 200,
+							headers: {
+								'Content-Type': 'application/json; charset=utf-8',
+								'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+								'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
+							}
+						});
+					} else (username.length > 8 && password.length > 8) {
+						const kv_key = await ENV.put(username, password);
+					}
+				} else if (login_database == 'mongodb') {
+					// to be implemented later
+				} else {
+					return new Response("Signup is not supported with local database", {
+						status: 200,
+						headers: {
+							'Content-Type': 'application/json; charset=utf-8',
+							'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+							'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
+						}
+					});
 				}
 			}
 		}
@@ -1972,3 +1938,15 @@
 		}
 		return this.replace(/^\s+|\s+$/g, '');
 	};
+
+
+	function decodeJwtToken(token) {
+		const base64Url = token.split('.')[1];
+		const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+		const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+			return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+		}).join(''));
+	
+		return JSON.parse(jsonPayload);
+	}
+	
