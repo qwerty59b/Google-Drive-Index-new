@@ -93,6 +93,7 @@
 		"favicon": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.3/images/favicon.ico",
 		// if logo is true then link otherwise just text for name
 		"logo_link_name": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.3/images/bhadoo-cloud-logo-white.svg",
+		"login_image": "https://i1.wp.com/i.imgur.com/5fHELJr.png", // Login page logo image
 		"fixed_header": true, // If you want the footer to be flexible or fixed.
 		"header_padding": "80", // Value 80 for fixed header, Value 20 for flexible header. Required to be changed accordingly in some themes.
 		"nav_link_1": "Home", // change navigation link name
@@ -325,7 +326,8 @@
 					  <div class="container">
 						 <div class="row">
 							<div class="col-lg-10 col-xl-7 mx-auto">
-							   <h3 class="logo text-center mb-3">${authConfig.siteName}</h3>
+			 				   <image src="https://i1.wp.com/i.imgur.com/OOuxh8u.jpeg?w=50" class="img-fluid" style="width: 100px; height: 100px; display: block; margin-left: auto; margin-right: auto; margin-bottom: 20px;">
+								<img src="${uiConfig.login_image}" class="img-fluid" style="width: 150px; display: block; margin-left: auto; margin-right: auto; margin-bottom: 20px;">
 							   <div id="error-message" class="alert alert-danger"></div>
 							   <form onsubmit="return false;" method="post">
 									<p id="error" style="color:red;"></p>
@@ -398,9 +400,10 @@
 					  .then(data => {
 						if (!data.ok) {
 						  document.getElementById("error-message").style.display = "block";
-						  document.getElementById("error-message").innerHTML = "Invalid Credentials";
+						  document.getElementById("error-message").innerHTML = "Failed to Create Account, Error: " + data.error;
 						} else {
-						  window.location.reload();
+							document.getElementById("error-message").style.display = "block";
+							document.getElementById("error-message").innerHTML = "Account Created, Please Login";
 						}
 					  });
 				});	
@@ -431,7 +434,7 @@
 								  <div class="form-group mb-3">
 									 <input id="password" type="password" placeholder="Password" class="form-control rounded-pill border-0 shadow-sm px-4 text-primary" required>
 								  </div>
-								  <button id="btn-login" type="submit" class="btn btn-primary btn-block text-uppercase mb-2 rounded-pill shadow-sm"SIGNUP</button>
+								  <button id="btn-login" type="submit" class="btn btn-primary btn-block text-uppercase mb-2 rounded-pill shadow-sm">SIGNUP</button>
 								  <a href="/login" class="btn btn-outline-danger btn-block text-uppercase mb-2 rounded-pill shadow-sm">LOGIN</a>
 							   </form>
 							   <hr class="solid">
@@ -797,11 +800,21 @@
 						}
 					}
 					if (!user_found) {
-						let response = new Response('Invalid User!', {
-						});
-						response.headers.set('Set-Cookie', `session=; HttpOnly; Secure; SameSite=Lax;`);
-						response.headers.set("Refresh", "1; url=/?error=Invalid User");
-						return response;
+						if (authConfig.enable_signup && login_database == 'kv') {
+							await ENV.put(email, Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
+							kv_key = await ENV.get(email);
+							if (kv_key == null) {
+								var user_found = false;
+							} else {
+								var user_found = true;
+							}
+						} else {
+							let response = new Response('Invalid User!', {
+							});
+							response.headers.set('Set-Cookie', `session=; HttpOnly; Secure; SameSite=Lax;`);
+							response.headers.set("Refresh", "1; url=/?error=Invalid User");
+							return response;
+						}
 					}
 					const current_time = Date.now(); // this results in a timestamp of the number of milliseconds since epoch.
 					const session_time = current_time + 86400000 * authConfig.login_days;
@@ -825,7 +838,7 @@
 					response.headers.set("Refresh", "1; url=/?error=Invalid Token");
 					return response;
 				}
-			} else if (request.method === 'GET') {
+			} else if (request.method === 'GET' && path != '/signup') {
 				//console.log("GET Request")
 				const cookie = request.headers.get('cookie');
 				if (cookie && cookie.includes('session=')) {
@@ -877,15 +890,6 @@
 						response.headers.set("Refresh", "1; url=/?error=Invalid User");
 						return response;
 					}
-				} else if (path == '/signup' && enable_signup) {
-					return new Response(signup_html, {
-						status: 200,
-						headers: {
-							'Content-Type': 'application/json; charset=utf-8',
-							'Access-Control-Allow-Origin': '*', // Required for CORS support to work
-							'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
-						}
-					});
 				} else {
 					return login()
 				}
@@ -961,22 +965,75 @@
 					});
 					return response;
 				}
+			} else if (path == '/signup' && authConfig.enable_signup) {
+				return new Response(signup_html, {
+					status: 200,
+					headers: {
+						'Content-Type': 'text/html; charset=utf-8',
+						'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+						'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
+					}
+				});
 			} else if (authConfig.enable_signup && request.method === 'POST' && path === '/signup_api') {
 				if (login_database == 'kv') {
 					const formdata = await request.formData();
 					const username = formdata.get('username');
 					const password = formdata.get('password');
 					if (username == null || password == null) {
-						return new Response("Username or Password cannot be null", {
+						const jsonResponse = {
+							ok: true,
+							error: "Username or Password is null"
+						}
+						let response = new Response(JSON.stringify(jsonResponse), {
 							status: 200,
 							headers: {
 								'Content-Type': 'application/json; charset=utf-8',
+								'Set-Cookie': `session=; path=/; HttpOnly; Secure; SameSite=Lax`,
 								'Access-Control-Allow-Origin': '*', // Required for CORS support to work
 								'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
 							}
 						});
-					} else (username.length > 8 && password.length > 8) {
-						const kv_key = await ENV.put(username, password);
+						return response;
+					} else if (username.length > 8 && password.length > 8) {
+						const checkKey = await ENV.get(username);
+						let jsonResponse;
+						if (checkKey != null) {
+							jsonResponse = {
+								ok: false,
+								error: "User Already Exists"
+							}	
+						} else {
+							await ENV.put(username, password);
+							jsonResponse = {
+								ok: true,
+								error: "User Created"
+							}
+						}
+						let response = new Response(JSON.stringify(jsonResponse), {
+							status: 200,
+							headers: {
+								'Content-Type': 'application/json; charset=utf-8',
+								'Set-Cookie': `session=; path=/; HttpOnly; Secure; SameSite=Lax`,
+								'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+								'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
+							}
+						});
+						return response;
+					} else {
+						const jsonResponse = {
+							ok: false,
+							error: "Username or Password length is less than 8 characters"
+						}
+						let response = new Response(JSON.stringify(jsonResponse), {
+							status: 200,
+							headers: {
+								'Content-Type': 'application/json; charset=utf-8',
+								'Set-Cookie': `session=; path=/; HttpOnly; Secure; SameSite=Lax`,
+								'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+								'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
+							}
+						});
+						return response;
 					}
 				} else if (login_database == 'mongodb') {
 					// to be implemented later
