@@ -1586,7 +1586,7 @@
 				//return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path || '', 302);
 			}
 		} catch (error) {
-			return new Response("Invalid ID or Path Not Found" + error);
+			return new Response("Invalid ID or Path Not Found");
 		}
 	}
 
