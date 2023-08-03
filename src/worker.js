@@ -36,11 +36,11 @@
 		"enable_cors_file_down": false,
 		"enable_password_file_verify": true, // support for .password file
 		"direct_link_protection": false, // protects direct links with Display UI
-		"disable_anonymous_download": false, // disables direct links and hides download button in UI
-		"lock_folders": false, // keeps folders and search locked if auth in on, and allows individual file view
+		"disable_anonymous_download": false, // disables direct links without session
+		//"lock_folders": false, // keeps folders and search locked if auth in on, and allows individual file view
 		"file_link_expiry" : 7, // expire file link in set number of days
 		"search_all_drives": true, // search all of your drives instead of current drive if set to true
-		"enable_login": true, // set to true if you want to add login system
+		"enable_login": false, // set to true if you want to add login system
 		"enable_signup": true, // set to true if you want to add signup system
 		"enable_social_login": true, // set to true if you want to add social login system
 		"google_client_id_for_login": "746239575955-rkmpc4e2c5t9d2gcl9h9t9s5ttga6clg.apps.googleusercontent.com", // Google Client ID for Login
@@ -64,8 +64,14 @@
 			  "id": "0APTJQGSDLteeUk9PVA",
 			  "name": "Drive One",
 			  "protect_file_link": false,
-		  }
+		  },
+		  {
+			"id": "0APTJQGSDLteeUk9PVA1",
+			"name": "Drive One",
+			"protect_file_link": false,
+			}
 		]};
+	const drive_list = authConfig.roots.map(it => it.id) // this 
 	const crypto_base_key = "3225f86e99e205347b4310e437253bfd" // Example 256 bit key used.
 	const encrypt_iv = new Uint8Array([247,254,106,195,32,148,131,244,222,133,26,182,20,138,215,81]); // Example 128 bit IV used.
 
@@ -1567,13 +1573,20 @@
 	}
 
 	async function findId2Path(gd, url) {
-		let [path, prefix] = await gd.findPathById(url.searchParams.get('id'));
-		if (!path) {
-			return new Response("Invalid URL");
-		} else if (url.searchParams.get('view') && url.searchParams.get('view') == 'true') {
-			return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '', 302);
-		} else {
-			return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path || '', 302);
+		try {
+			let [path, prefix] = await gd.findPathById(url.searchParams.get('id'));
+			console.log(path, prefix)
+			if (!path) {
+				return new Response("Invalid URL");
+			} else if (url.searchParams.get('view') && url.searchParams.get('view') == 'true') {
+				return new Response("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '');
+				//return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '', 302);
+			} else {
+				return new Response("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '');
+				//return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path || '', 302);
+			}
+		} catch (error) {
+			return new Response("Invalid ID or Path Not Found" + error);
 		}
 	}
 
@@ -1820,17 +1833,16 @@
 			let meet_top = false;
 			async function addItsFirstParent(file_obj) {
 				if (!file_obj) return;
-				if (!file_obj.parents) return;
+				if (!file_obj.parents) return null;
 				if (file_obj.parents.length < 1) return;
 				let p_ids = file_obj.parents;
-				//console.log(p_ids)
 				if (p_ids && p_ids.length > 0) {
 					const first_p_id = p_ids[0];
-					const drive_list = authConfig.roots.map(it => it.id)
+					console.log(first_p_id)
 					if (drive_list.includes(first_p_id)) {
 						meet_top = true;
 						drive_index_no = drive_list.indexOf(first_p_id);
-						return;
+						return drive_index_no;
 					}
 					const p_file_obj = await gd.findItemById(first_p_id);
 					if (p_file_obj && p_file_obj.id) {
@@ -1838,14 +1850,15 @@
 						await addItsFirstParent(p_file_obj);
 					}
 				}
+				return drive_index_no;
 			}
 	
 			const child_obj = await gd.findItemById(child_id);
 			if (contain_myself) {
 				parent_files.push(child_obj);
 			}
-			await addItsFirstParent(child_obj);
-			//console.log(parent_files)
+			const drive_id = await addItsFirstParent(child_obj);
+		  	console.log("parents -- " + JSON.stringify(parent_files))
 			return meet_top ? [parent_files, drive_index_no] : null;
 		}
 	
@@ -1853,15 +1866,21 @@
 			if (this.id_path_cache[child_id]) {
 				return this.id_path_cache[child_id];
 			}
-	
-			const [p_files, drive_index_no] = await this.findParentFilesRecursion(child_id);
+			let p_files 
+			let drive_index_no = 0;
+			try {
+				[p_files, drive_index_no] = await this.findParentFilesRecursion(child_id);
+			} catch (error) {
+				return null;
+			}
+			
 			if (!p_files || p_files.length < 1) return '';
 	
 			let cache = [];
 			// Cache the path and id of each level found
 			p_files.forEach((value, idx) => {
 				const is_folder = idx === 0 ? (p_files[idx].mimeType === DriveFixedTerms.folder_mime_type) : true;
-				let path = '/' + p_files.slice(idx).map(it => encodeURIComponent(it.name)).reverse().join('/');
+				let path = '/' + p_files.slice(idx).map(it => it.name).reverse().join('/');
 				if (is_folder) path += '/';
 				cache.push({
 					id: p_files[idx].id,
