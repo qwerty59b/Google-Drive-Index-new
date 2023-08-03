@@ -1601,8 +1601,6 @@
 			this.paths = [];
 			this.files = [];
 			this.passwords = [];
-			this.id_path_cache = {};
-			this.id_path_cache[this.root['id']] = '/';
 			this.paths["/"] = this.root['id'];
 		}
 		async init() {
@@ -1863,9 +1861,6 @@
 		}
 	
 		async findPathById(child_id) {
-			if (this.id_path_cache[child_id]) {
-				return this.id_path_cache[child_id];
-			}
 			let p_files 
 			let drive_index_no = 0;
 			try {
@@ -1886,10 +1881,6 @@
 					id: p_files[idx].id,
 					path: path
 				})
-			});
-			cache.forEach((obj) => {
-				this.id_path_cache[obj.id] = obj.path;
-				this.paths[obj.path] = obj.id
 			});
 			return [cache[0].path, drive_index_no];
 		}
