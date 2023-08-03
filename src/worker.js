@@ -46,8 +46,9 @@
 		"google_client_id_for_login": "746239575955-rkmpc4e2c5t9d2gcl9h9t9s5ttga6clg.apps.googleusercontent.com", // Google Client ID for Login
 		"google_client_secret_for_login": "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", // Google Client Secret for Login
 		"redirect_domain": "https://google-drive-index.hashhackersapi.workers.dev", // Domain for login redirect eg. https://example.com
-		"login_database": "KV", // KV or Local or Mongodb
+		"login_database": "Local", // KV or Local or Mongodb
 		"login_days" : 7, // days to keep logged in
+		"enable_ip_lock" : true, // set to true if you want to lock user downloads to user IP
 		"users_list": [
 			{
 				"username": "admin@hashhackers.com",
@@ -93,7 +94,7 @@
 		"favicon": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.3/images/favicon.ico",
 		// if logo is true then link otherwise just text for name
 		"logo_link_name": "https://cdn.jsdelivr.net/npm/@googledrive/index@2.2.3/images/bhadoo-cloud-logo-white.svg",
-		"login_image": "https://i1.wp.com/i.imgur.com/5fHELJr.png", // Login page logo image
+		"login_image": "https://i.imgur.com/5fHELJr.png", // Login page logo image
 		"fixed_header": true, // If you want the footer to be flexible or fixed.
 		"header_padding": "80", // Value 80 for fixed header, Value 20 for flexible header. Required to be changed accordingly in some themes.
 		"nav_link_1": "Home", // change navigation link name
@@ -128,11 +129,11 @@
 		"jsdelivr_cdn_src": "https://cdn.jsdelivr.net/npm/@googledrive/index", // If Project is Forked, then enter your GitHub repo
 		"render_head_md": true, // Render Head.md
 		"render_readme_md": true, // Render Readme.md
-		"display_drive_link": false, // This will add a Link Button to Google Drive of that particular file.
 		"unauthorized_owner_link": "https://telegram.dog/Telegram", // Unauthorized Error Page Link to Owner
 		"unauthorized_owner_email": "abuse@telegram.org", // Unauthorized Error Page Owner Email
 		"downloaddomain": domain_for_dl, // Ignore this and set domains at top of this page after service accounts.
 		"show_logout_button": authConfig.enable_login ? true : false, // set to true if you want to add logout button
+		"allow_file_copy": true, // set to false if you want to disable file copy
 	};
 
 	const player_config = {
@@ -154,6 +155,8 @@
 	  <title>${authConfig.siteName}</title>
 	  <meta name="robots" content="noindex" />
 	  <link rel="icon" href="${uiConfig.favicon}">
+	  <style>
+	  @font-face {font-family: Cinemathic Visualation;src: url(/fonts/CinemathicVisualation.ttf);}.navbar-brand {font-family: Cinemathic Visualation;font-size: 30px;}.footer-text {font-family: Cinemathic Visualation;font-size: 40px;}a {color:white;}p {color:white;} .logo_new {font-family: Cinemathic Visualation;font-size: 50px;color:white;} .loading {position: fixed;z-index: 999;height: 2em;width: 2em;overflow: show;margin: auto;top: 0;left: 0;bottom: 0;right: 0;}.loading:before {content: '';display: block;position: fixed;top: 0;left: 0;width: 100%;height: 100%;background: radial-gradient(rgba(20, 20, 20,.8), rgba(0, 0, 0, .8));background: -webkit-radial-gradient(rgba(20, 20, 20,.8), rgba(0, 0, 0,.8));}.loading:not(:required) {font: 0/0 a;color: transparent;text-shadow: none;background-color: transparent;border: 0;}.loading:not(:required):after {content: '';display: block;font-size: 10px;width: 1em;height: 1em;margin-top: -0.5em;-webkit-animation: spinner 150ms infinite linear;-moz-animation: spinner 150ms infinite linear;-ms-animation: spinner 150ms infinite linear;-o-animation: spinner 150ms infinite linear;animation: spinner 150ms infinite linear;border-radius: 0.5em;-webkit-box-shadow: rgba(255,255,255, 0.75) 1.5em 0 0 0, rgba(255,255,255, 0.75) 1.1em 1.1em 0 0, rgba(255,255,255, 0.75) 0 1.5em 0 0, rgba(255,255,255, 0.75) -1.1em 1.1em 0 0, rgba(255,255,255, 0.75) -1.5em 0 0 0, rgba(255,255,255, 0.75) -1.1em -1.1em 0 0, rgba(255,255,255, 0.75) 0 -1.5em 0 0, rgba(255,255,255, 0.75) 1.1em -1.1em 0 0;box-shadow: rgba(255,255,255, 0.75) 1.5em 0 0 0, rgba(255,255,255, 0.75) 1.1em 1.1em 0 0, rgba(255,255,255, 0.75) 0 1.5em 0 0, rgba(255,255,255, 0.75) -1.1em 1.1em 0 0, rgba(255,255,255, 0.75) -1.5em 0 0 0, rgba(255,255,255, 0.75) -1.1em -1.1em 0 0, rgba(255,255,255, 0.75) 0 -1.5em 0 0, rgba(255,255,255, 0.75) 1.1em -1.1em 0 0;}@-webkit-keyframes spinner {0% {-webkit-transform: rotate(0deg);-moz-transform: rotate(0deg);-ms-transform: rotate(0deg);-o-transform: rotate(0deg);transform: rotate(0deg);}100% {-webkit-transform: rotate(360deg);-moz-transform: rotate(360deg);-ms-transform: rotate(360deg);-o-transform: rotate(360deg);transform: rotate(360deg);}}@-moz-keyframes spinner {0% {-webkit-transform: rotate(0deg);-moz-transform: rotate(0deg);-ms-transform: rotate(0deg);-o-transform: rotate(0deg);transform: rotate(0deg);}100% {-webkit-transform: rotate(360deg);-moz-transform: rotate(360deg);-ms-transform: rotate(360deg);-o-transform: rotate(360deg);transform: rotate(360deg);}}@-o-keyframes spinner {0% {-webkit-transform: rotate(0deg);-moz-transform: rotate(0deg);-ms-transform: rotate(0deg);-o-transform: rotate(0deg);transform: rotate(0deg);}100% {-webkit-transform: rotate(360deg);-moz-transform: rotate(360deg);-ms-transform: rotate(360deg);-o-transform: rotate(360deg);transform: rotate(360deg);}}@keyframes spinner {0% {-webkit-transform: rotate(0deg);-moz-transform: rotate(0deg);-ms-transform: rotate(0deg);-o-transform: rotate(0deg);transform: rotate(0deg);}100% {-webkit-transform: rotate(360deg);-moz-transform: rotate(360deg);-ms-transform: rotate(360deg);-o-transform: rotate(360deg);transform: rotate(360deg);}}	  </style>
 	  <script>
 		window.drive_names = JSON.parse('${JSON.stringify(authConfig.roots.map(it => it.name))}');
 		window.MODEL = JSON.parse('${JSON.stringify(model)}');
@@ -326,7 +329,6 @@
 					  <div class="container">
 						 <div class="row">
 							<div class="col-lg-10 col-xl-7 mx-auto">
-			 				   <image src="https://i1.wp.com/i.imgur.com/OOuxh8u.jpeg?w=50" class="img-fluid" style="width: 100px; height: 100px; display: block; margin-left: auto; margin-right: auto; margin-bottom: 20px;">
 								<img src="${uiConfig.login_image}" class="img-fluid" style="width: 150px; display: block; margin-left: auto; margin-right: auto; margin-bottom: 20px;">
 							   <div id="error-message" class="alert alert-danger"></div>
 							   <form onsubmit="return false;" method="post">
@@ -723,6 +725,7 @@
 		const region = request.headers.get('cf-ipcountry');
 		const asn_servers = request.cf.asn;
 		const referer = request.headers.get("Referer");
+		const user_ip = request.headers.get("CF-Connecting-IP");
 		let url = new URL(request.url);
 		let path = url.pathname;
 		let hostname = url.hostname;
@@ -746,6 +749,12 @@
 			response.headers.set('Set-Cookie', `session=; HttpOnly; Secure; SameSite=Lax;`);
 			response.headers.set("Refresh", "1; url=/?error=Logged Out");
 			return response;
+		}
+		if (path == '/findpath') {
+			const params = url.searchParams;
+			const id = params.get('id');
+			const view = params.get('view') || 'false';
+			return Response.redirect(url.protocol + hostname +'/0:findpath?id=' + id + '&view='+ view , 307);
 		}
 		if (authConfig.enable_login) {
 			const login_database = authConfig.login_database.toLowerCase();
@@ -1049,6 +1058,54 @@
 				}
 			}
 		}
+		if (request.method === "POST" && path == "/copy") {
+			try {
+			  let form = await request.formData();
+			  let time = form.get('time')
+			  if (time < Math.floor(Date.now() / 1000)) {
+				return new Response('{"error":"Invalid Time"}', {
+				  status: 404,
+				  headers: {
+					  "content-type": "application/json",
+					  "Access-Control-Allow-Origin": "*",
+					  "Cache-Control": "max-age=0",
+				  }
+				});
+			  }
+			  let user_drive = form.get('root_id') || "null";
+			  if (user_drive == "null") {
+				return new Response('{"error":"404"}', {
+				  status: 200,
+				  headers: {
+					  "content-type": "application/json",
+					  "Access-Control-Allow-Origin": "*",
+					  "Cache-Control": "max-age=0",
+				  }
+				});
+			  }
+			  let public_drive_id = await decryptString(form.get('id')) || "null";
+			  let user_folder_id = form.get('root_id') || "null";
+			  let resourcekey = form.get('resourcekey')  || "null";
+			  let file = await copyItemById(public_drive_id, resourcekey, user_folder_id);
+				return new Response(JSON.stringify(file), {
+				  status: 200,
+				  headers: {
+					  "content-type": "application/json",
+					  "Access-Control-Allow-Origin": "*",
+					  "Cache-Control": "max-age=0",
+				  }
+				});
+			} catch (e){
+				return new Response(e, {
+				  status: 200,
+				  headers: {
+					  "content-type": "application/json",
+					  "Access-Control-Allow-Origin": "*",
+					  "Cache-Control": "max-age=0",
+				  }
+				});
+			}
+		  }
 		
 		if (gds.length === 0) {
 			for (let i = 0; i < authConfig.roots.length; i++) {
@@ -1101,9 +1158,16 @@
 			console.log("Download.aspx started");
 			const file = await decryptString(url.searchParams.get('file'));
 			const expiry = await decryptString(url.searchParams.get('expiry'));
-			const integrity = await genIntegrity(`${file}|${expiry}`);
-			const mac = url.searchParams.get('mac');
-			const integrity_result = await checkintegrity(mac, integrity);
+			let integrity_result = false;
+			if (authConfig['enable_ip_lock'] && user_ip) {
+				const integrity = await genIntegrity(`${file}|${expiry}|${user_ip}`);
+				const mac = url.searchParams.get('mac');
+				integrity_result = await checkintegrity(mac, integrity);
+			} else {
+				const integrity = await genIntegrity(`${file}|${expiry}`);
+				const mac = url.searchParams.get('mac');
+				integrity_result = await checkintegrity(mac, integrity);
+			}
 			if (integrity_result) {
 				let range = request.headers.get('Range');
 				const inline = 'true' === url.searchParams.get('inline');
@@ -1170,9 +1234,11 @@
 						  }
 					  });
 				  }
-			  } else if (command === 'id2path' && request.method === 'POST') {
-				  return handleId2Path(request, gd)
-			  }
+				} else if (command === 'id2path' && request.method === 'POST') {
+					return handleId2Path(request, gd)
+				} else if (command === 'findpath' && request.method === 'GET') {
+					return findId2Path(gd, url)
+				}
 		  }
 		
 
@@ -1195,7 +1261,7 @@
 		
 		//path = path.replace(gd.url_path_prefix, '') || '/';
 		if (request.method == 'POST') {
-			return apiRequest(request, gd);
+			return apiRequest(request, gd, user_ip);
 		}
 	
 		let action = url.searchParams.get('a');
@@ -1282,6 +1348,33 @@
 			return await res.json()
 		}
 
+		async function copyItemById(id, resourcekey, user_folder_id, headers = {}) {
+			let url = `https://www.googleapis.com/drive/v3/files/${id}/copy?fields=id,name,mimeType&supportsAllDrives=true`;
+			const accessToken = await getAccessToken();
+			headers["authorization"] = "Bearer " + accessToken;
+			headers["Accept"] = "application/json";
+			headers["Content-Type"] = "application/json";
+			headers["X-Goog-Drive-Resource-Keys"] = id+"/"+resourcekey;
+			let json = {
+				parents: [user_folder_id]
+			}
+			let res
+			for (let i = 0; i < 3; i++) {
+			  res = await fetch(url, {
+			  "method": "POST",
+			  "headers": headers,
+			  "body": JSON.stringify(json)
+			  });
+			  if (res.ok) {
+				break;
+			  }
+			  await sleep(100 * (i + 1));
+			}
+			const data = await res.json();
+			console.log(data);
+			return data;
+		}
+
 		async function fetch200(url, requestOption) {
 		  let response;
 		  for (let i = 0; i < 3; i++) {
@@ -1315,16 +1408,23 @@
 		}
 	}
 // end handlerequest
-	async function generateLink(file_id, iv) {
+	async function generateLink(file_id, user_ip, iv) {
 		const encrypted_id = await encryptString(file_id, iv);
 		const expiry = Date.now() + 1000 * 60 * 60 * 24 * authConfig.file_link_expiry;
 		const encrypted_expiry = await encryptString(expiry.toString(), iv);
-		const integrity	= await genIntegrity(`${file_id}|${expiry}`);
-		const url = `/download.aspx?file=${encodeURIComponent(encrypted_id)}&expiry=${encodeURIComponent(encrypted_expiry)}&mac=${encodeURIComponent(integrity)}`;
+		let url
+		if (authConfig['enable_ip_lock'] && user_ip) {
+			const encrypted_ip = await encryptString(user_ip, iv);
+			const integrity	= await genIntegrity(`${file_id}|${expiry}|${user_ip}`);
+			url = `/download.aspx?file=${encodeURIComponent(encrypted_id)}&expiry=${encodeURIComponent(encrypted_expiry)}&ip=${encodeURIComponent(encrypted_ip)}&mac=${encodeURIComponent(integrity)}`;
+		} else {
+			const integrity	= await genIntegrity(`${file_id}|${expiry}`);
+			url = `/download.aspx?file=${encodeURIComponent(encrypted_id)}&expiry=${encodeURIComponent(encrypted_expiry)}&mac=${encodeURIComponent(integrity)}`;
+		}
 		return url;
 	}
 
-	async function apiRequest(request, gd) {
+	async function apiRequest(request, gd, user_ip) {
 		let url = new URL(request.url);
 		let path = url.pathname;
 		path = path.replace(gd.url_path_prefix, '') || '/';
@@ -1361,7 +1461,7 @@
 			  
 				let link = null;
 				if (mimeType !== 'application/vnd.google-apps.folder') {
-				  link = await generateLink(id);
+				  link = await generateLink(id, user_ip);
 				}
 			  
 				return {
@@ -1387,7 +1487,7 @@
 			
 			const encryptedId = await encryptString(id);
 			const encryptedDriveId = await encryptString(driveId);
-			const link = await generateLink(id);
+			const link = await generateLink(id, user_ip);
 			const encryptedFile = {
 			  ...fileWithoutId,
 			  id: encryptedId,
@@ -1425,7 +1525,7 @@
 		  
 			const encryptedId = await encryptString(id);
 			const encryptedDriveId = await encryptString(driveId);
-			const link = await generateLink(id);
+			const link = await generateLink(id, user_ip);
 			return {
 			  ...fileWithoutId,
 			  id: encryptedId,
@@ -1446,9 +1546,6 @@
 				"Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
 			}
 		};
-		const {
-			searchParams
-		} = url
 		try {
 			const data = await request.json();
 			const id = await decryptString(data.id);
@@ -1468,7 +1565,18 @@
 			});
 		}
 	}
-	
+
+	async function findId2Path(gd, url) {
+		let [path, prefix] = await gd.findPathById(url.searchParams.get('id'));
+		if (!path) {
+			return new Response("Invalid URL");
+		} else if (url.searchParams.get('view') && url.searchParams.get('view') == 'true') {
+			return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '', 302);
+		} else {
+			return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path || '', 302);
+		}
+	}
+
 	// start of class googleDrive
 	class googleDrive {
 		constructor(authConfig, order) {
@@ -1774,7 +1882,7 @@
 			let res = await fetch(url, requestOption);
 			return await res.json()
 		}
-	
+
 		async findPathId(path) {
 			let c_path = '/';
 			let c_id = this.paths[c_path];

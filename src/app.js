@@ -7,6 +7,7 @@ function init() {
    <div id="nav">
    </div>
 </header>
+<div class="loading" id="spinner" style="display:none;">Loading&#8230;</div>
 <div>
 <div id="content" style="padding-top: ${UI.header_padding}px;${UI.fixed_footer ?' padding-bottom: clamp(170px, 100%, 300px);': ''}">
 </div>
@@ -876,7 +877,8 @@ function get_file(path, file, callback) {
 }
 
 // File display ?a=view
-function file(path) {
+async function file(path) {
+    var cookie_folder_id = await getCookie("root_id") || '';
     var name = path.split('/').pop();
     var ext = name.split('.').pop().toLowerCase().replace(`?a=view`, "");
     $('#content').html(`<div class="d-flex justify-content-center" style="height: 150px"><div class="spinner-border ${UI.loading_spinner_class} m-5" role="status" id="spinner"><span class="sr-only"></span></div></div>`);
@@ -908,9 +910,10 @@ function file(path) {
           const encoded_name = encodeURIComponent(name);
           const size = formatFileSize(obj.size);
           const url = UI.second_domain_for_dl ? UI.downloaddomain + obj.link : window.location.origin + obj.link;
+          const file_id = obj.id;
           if (mimeType.includes("video") || video.includes(fileExtension)) {
             const poster = obj.thumbnailLink ? obj.thumbnailLink.replace("s220", "s0") : UI.poster;
-            file_video(name, encoded_name, size, poster, url, mimeType);
+            file_video(name, encoded_name, size, poster, url, mimeType, file_id, cookie_folder_id);
           } else if (mimeType.includes("audio") || audio.includes(fileExtension)) {
             file_audio(name, encoded_name, size, url);
           } else if (mimeType.includes("image") || image.includes(fileExtension)) {
@@ -943,13 +946,24 @@ function file(path) {
       });
 }
   
+const copyButton = `<button onclick="copyFunction()" onmouseout="outFunc()" class="btn btn-success"> <span class="tooltiptext" id="myTooltip">Copy</span> </button>`
+
+function generateCopyFileBox(file_id, cookie_folder_id) {
+  const copyFileBox = `<div class="row justify-content-center mt-3" id="copyresult">
+  <div class="col-12 col-md-8" id="copystatus"><div class='alert alert-secondary' role='alert'> Send Request to Copy File </div></div>
+  <div class="col-12 col-md-8"> <input id="user_folder_id" type="text" class="form-control" placeholder="Enter Your Folder ID to Copy this File" value="${cookie_folder_id}" required></div>
+  <div class="col-12 col-md-8 mt-2"> <button id="copy_file" onclick="copyFile('${file_id}')" style="margin-top: 5px;" class="btn btn-danger btn-block">Copy File to Own Drive</button></div>
+  </div>`;
+
+  return copyFileBox;
+}
 
 // Document display |zip|.exe/others direct downloads
 function file_others(name, encoded_name, size, url) {
   // Split the file path into parts
   var path = window.location.pathname;
   var pathParts = path.split('/');
-  
+  const copyFileBox = UI.allow_file_copy ? generateCopyFileBox(file_id, cookie_folder_id) : '';
   // Generate the navigation based on path parts
   var navigation = '';
   var new_path = '';
@@ -992,7 +1006,7 @@ function file_others(name, encoded_name, size, url) {
                   <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.plus/idm.internet.download.manager.Downloader;S.title=${encoded_name};end">1DM+ (Plus)</a>
                 </div>
             </div>
-            <button onclick="copyFunction()" onmouseout="outFunc()" class="btn btn-success"> <span class="tooltiptext" id="myTooltip">Copy</span> </button>
+            `+copyButton+copyFileBox`
             </div>
             <br></div>`;
         $("#content").html(content);
@@ -1015,7 +1029,7 @@ function file_code(name, encoded_name, size, bytes, url, ext) {
   // Split the file path into parts
   var path = window.location.pathname;
   var pathParts = path.split('/');
-  
+  const copyFileBox = UI.allow_file_copy ? generateCopyFileBox(file_id, cookie_folder_id) : '';
   // Generate the navigation based on path parts
   var navigation = '';
   var new_path = '';
@@ -1060,7 +1074,7 @@ function file_code(name, encoded_name, size, bytes, url, ext) {
                 <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.plus/idm.internet.download.manager.Downloader;S.title=${encoded_name};end">1DM+ (Plus)</a>
               </div>
             </div>
-            <button onclick="copyFunction()" onmouseout="outFunc()" class="btn btn-success"> <span class="tooltiptext" id="myTooltip">Copy</span> </button>
+            `+copyButton+copyFileBox+`
           </div>
           <br>
         </div>
@@ -1088,12 +1102,12 @@ function file_code(name, encoded_name, size, bytes, url, ext) {
 
 
 // Document display video |mp4|webm|avi|
-function file_video(name, encoded_name, size, poster, url, mimeType) {
+function file_video(name, encoded_name, size, poster, url, mimeType, file_id, cookie_folder_id) {
   var url_base64 = btoa(url);
   // Split the file path into parts
   var path = window.location.pathname;
   var pathParts = path.split('/');
-  
+  const copyFileBox = UI.allow_file_copy ? generateCopyFileBox(file_id, cookie_folder_id) : '';
   // Generate the navigation based on path parts
   var navigation = '';
   var new_path = '';
@@ -1174,8 +1188,8 @@ function file_video(name, encoded_name, size, poster, url, mimeType) {
               <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.plus/idm.internet.download.manager.Downloader;S.title=${encoded_name};end">1DM+ (Plus)</a>
               </div>
           </div>
-          <button onclick="copyFunction()" onmouseout="outFunc()" class="btn btn-success"> <span class="tooltiptext" id="myTooltip">Copy</span> </button>
-          <br>
+          `+copyButton+copyFileBox+`
+          
           </div>
           </div>
           `}
@@ -1244,7 +1258,7 @@ function file_audio(name, encoded_name, size, url) {
   // Split the file path into parts
   var path = window.location.pathname;
   var pathParts = path.split('/');
-  
+  const copyFileBox = UI.allow_file_copy ? generateCopyFileBox(file_id, cookie_folder_id) : '';
   // Generate the navigation based on path parts
   var navigation = '';
   var new_path = '';
@@ -1306,7 +1320,7 @@ function file_audio(name, encoded_name, size, url) {
               <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.plus/idm.internet.download.manager.Downloader;S.title=${encoded_name};end">1DM+ (Plus)</a>
               </div>
           </div>
-          <button onclick="copyFunction()" onmouseout="outFunc()" class="btn btn-success"> <span class="tooltiptext" id="myTooltip">Copy</span> </button>
+          `+copyButton+copyFileBox+`
           <br>
           </div>
           </div>
@@ -1338,7 +1352,7 @@ function file_pdf(name, encoded_name, size, url) {
   // Split the file path into parts
   var path = window.location.pathname;
   var pathParts = path.split('/');
-  
+  const copyFileBox = UI.allow_file_copy ? generateCopyFileBox(file_id, cookie_folder_id) : '';
   // Generate the navigation based on path parts
   var navigation = '';
   var new_path = '';
@@ -1387,7 +1401,7 @@ function file_pdf(name, encoded_name, size, url) {
             <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.plus/idm.internet.download.manager.Downloader;S.title=${encoded_name};end">1DM+ (Plus)</a>
         </div>
     </div>
-    <button onclick="copyFunction()" onmouseout="outFunc()" class="btn btn-success"> <span class="tooltiptext" id="myTooltip">Copy</span> </button>
+    `+copyButton+`
     </div>
     <br>
     
@@ -1403,7 +1417,7 @@ function file_image(name, encoded_name, size, url) {
   // Split the file path into parts
   var path = window.location.pathname;
   var pathParts = path.split('/');
-  
+  const copyFileBox = UI.allow_file_copy ? generateCopyFileBox(file_id, cookie_folder_id) : '';
   // Generate the navigation based on path parts
   var navigation = '';
   var new_path = '';
@@ -1451,7 +1465,7 @@ function file_image(name, encoded_name, size, url) {
                 <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.plus/idm.internet.download.manager.Downloader;S.title=${encoded_name};end">1DM+ (Plus)</a>
               </div>
             </div>
-            <button onclick="copyFunction()" onmouseout="outFunc()" class="btn btn-success"> <span class="tooltiptext" id="myTooltip">Copy</span> </button>
+            `+copyButton+copyFileBox+`
           </div>
           <br>
         </div>
@@ -1575,6 +1589,67 @@ function updateCheckboxes() {
   }
 }
 
+async function getCookie(name) {
+  var nameEQ = name + "=";
+  var ca = document.cookie.split(';');
+  for (var i = 0; i < ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+}
+
+// Copy File to User Drive
+async function copyFile(driveid) {
+  try {
+      const copystatus = document.getElementById('copystatus');
+      copystatus.innerHTML = `<div class='alert alert-danger' role='alert'> Processing... </div>`;
+      
+      const user_folder_id = document.getElementById('user_folder_id').value;
+      if (user_folder_id === '') {
+          copystatus.innerHTML = `<div class='alert alert-danger' role='alert'> Empty ID </div>`;
+          return null;
+      }
+      
+      document.getElementById('spinner').style.display = 'block';
+      document.cookie = `root_id=${user_folder_id}; expires=Thu, 18 Dec 2050 12:00:00 UTC`;
+      const time = Math.floor(Date.now() / 1000);
+      const response = await fetch('/copy', {
+          method: 'POST',
+          cache: 'no-cache',
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: `id=${encodeURIComponent(driveid)}&root_id=${user_folder_id}&resourcekey=null&time=${time}`
+      });
+
+      if (response.status === 500) {
+          copystatus.innerHTML = `<div class='alert alert-danger' role='alert'> Unable to Copy File, Make Sure you've added system@zindex.eu.org to your Destination Folder </div>`;
+      } else if (response.status === 401) {
+          copystatus.innerHTML = `<div class='alert alert-danger' role='alert'> Unauthorized </div>`;
+      } else if (response.ok) {
+          const data = await response.json();
+          if (data && data.name) {
+              const link = `https://drive.google.com/file/d/${data.id}/view?usp=share_link`;
+              const copyresult = document.getElementById('copyresult');
+              copyresult.innerHTML = `<div class="col-12 col-md-12"> <input type="text" id="usercopiedfile" class="form-control" placeholder="Enter Your Folder ID to Copy this File" value="${link}" readonly></div> <div class="col-12 col-md-12"> <a href="${link}" target="_blank" style="margin-top: 5px;" class="btn btn-danger btn-block">Open Copied File</a></div>`;
+          } else if (data && data.error && data.error.message) {
+             copystatus.innerHTML = `<div class='alert alert-danger' role='alert'> `+data.error.message+` </div>`;
+          } else {
+              copystatus.innerHTML = `<div class='alert alert-danger' role='alert'> Unable to Copy File </div>`;
+          }
+      } else {
+          copystatus.innerHTML = `<div class='alert alert-danger' role='alert'> Unable to Copy File </div>`;
+      }
+
+      document.getElementById('spinner').style.display = 'none';
+  } catch (error) {
+      const copystatus = document.getElementById('copystatus');
+      copystatus.innerHTML = `<div class='alert alert-danger' role='alert'> An error occurred `+error+`</div>`;
+      document.getElementById('spinner').style.display = 'none';
+  }
+}
 
 
 // create a MutationObserver to listen for changes to the DOM
