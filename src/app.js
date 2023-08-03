@@ -915,15 +915,15 @@ async function file(path) {
             const poster = obj.thumbnailLink ? obj.thumbnailLink.replace("s220", "s0") : UI.poster;
             file_video(name, encoded_name, size, poster, url, mimeType, file_id, cookie_folder_id);
           } else if (mimeType.includes("audio") || audio.includes(fileExtension)) {
-            file_audio(name, encoded_name, size, url);
+            file_audio(name, encoded_name, size, url, file_id, cookie_folder_id);
           } else if (mimeType.includes("image") || image.includes(fileExtension)) {
-            file_image(name, encoded_name, size, url);
+            file_image(name, encoded_name, size, url, file_id, cookie_folder_id);
           } else if (mimeType.includes("pdf") || pdf.includes(fileExtension)) {
-            file_pdf(name, encoded_name, size, url);
+            file_pdf(name, encoded_name, size, url, file_id, cookie_folder_id);
           } else if (code.includes(fileExtension)) {
-            file_code(name, encoded_name, size, obj.size, url, fileExtension);
+            file_code(name, encoded_name, size, obj.size, url, fileExtension, file_id, cookie_folder_id);
           } else {
-            file_others(name, encoded_name, size, url);
+            file_others(name, encoded_name, size, url, file_id, cookie_folder_id);
           }
         }
       })
@@ -959,7 +959,7 @@ function generateCopyFileBox(file_id, cookie_folder_id) {
 }
 
 // Document display |zip|.exe/others direct downloads
-function file_others(name, encoded_name, size, url) {
+function file_others(name, encoded_name, size, url, file_id, cookie_folder_id) {
   // Split the file path into parts
   var path = window.location.pathname;
   var pathParts = path.split('/');
@@ -1012,7 +1012,7 @@ function file_others(name, encoded_name, size, url) {
         $("#content").html(content);
 }
 
-function file_code(name, encoded_name, size, bytes, url, ext) {
+function file_code(name, encoded_name, size, bytes, url, ext, file_id, cookie_folder_id) {
   var type = {
     "html": "html",
     "php": "php",
@@ -1253,7 +1253,7 @@ function file_video(name, encoded_name, size, poster, url, mimeType, file_id, co
 
 
 // File display Audio |mp3|flac|m4a|wav|ogg|
-function file_audio(name, encoded_name, size, url) {
+function file_audio(name, encoded_name, size, url, file_id, cookie_folder_id) {
   var url_base64 = btoa(url);
   // Split the file path into parts
   var path = window.location.pathname;
@@ -1348,7 +1348,7 @@ function file_audio(name, encoded_name, size, url) {
 
 
 // Document display pdf
-function file_pdf(name, encoded_name, size, url) {
+function file_pdf(name, encoded_name, size, url, file_id, cookie_folder_id) {
   // Split the file path into parts
   var path = window.location.pathname;
   var pathParts = path.split('/');
@@ -1413,7 +1413,7 @@ function file_pdf(name, encoded_name, size, url) {
 }
 
 // image display
-function file_image(name, encoded_name, size, url) {
+function file_image(name, encoded_name, size, url, file_id, cookie_folder_id) {
   // Split the file path into parts
   var path = window.location.pathname;
   var pathParts = path.split('/');

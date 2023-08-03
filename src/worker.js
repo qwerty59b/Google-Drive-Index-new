@@ -46,7 +46,7 @@
 		"google_client_id_for_login": "746239575955-rkmpc4e2c5t9d2gcl9h9t9s5ttga6clg.apps.googleusercontent.com", // Google Client ID for Login
 		"google_client_secret_for_login": "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", // Google Client Secret for Login
 		"redirect_domain": "https://google-drive-index.hashhackersapi.workers.dev", // Domain for login redirect eg. https://example.com
-		"login_database": "Local", // KV or Local or Mongodb
+		"login_database": "KV", // KV or Local or Mongodb
 		"login_days" : 7, // days to keep logged in
 		"enable_ip_lock" : true, // set to true if you want to lock user downloads to user IP
 		"users_list": [
