@@ -35,7 +35,6 @@
 		"enable_password_file_verify": true, // support for .password file
 		"direct_link_protection": false, // protects direct links with Display UI
 		"disable_anonymous_download": false, // disables direct links without session
-		//"lock_folders": false, // keeps folders and search locked if auth in on, and allows individual file view
 		"file_link_expiry": 7, // expire file link in set number of days
 		"search_all_drives": true, // search all of your drives instead of current drive if set to true
 		"enable_login": false, // set to true if you want to add login system
@@ -44,12 +43,11 @@
 		"google_client_id_for_login": "746239575955-rkmpc4e2c5t9d2gcl9h9t9s5ttga6clg.apps.googleusercontent.com", // Google Client ID for Login
 		"google_client_secret_for_login": "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", // Google Client Secret for Login
 		"redirect_domain": "https://google-drive-index.hashhackersapi.workers.dev", // Domain for login redirect eg. https://example.com
-		"login_database": "Local", // KV or Local or Mongodb
+		"login_database": "Local", // KV or Local
 		"login_days": 7, // days to keep logged in
 		"enable_ip_lock": false, // set to true if you want to lock user downloads to user IP
 		"single_session": false, // set to true if you want to allow only one session per user
 		"ip_changed_action": false, // set to true if you want to logout user if IP changed
-		"readonly": false, // set to true if you want to disable file/folder delete and move
 		"users_list": [{
 				"username": "admin@hashhackers.com",
 				"password": "admin",
