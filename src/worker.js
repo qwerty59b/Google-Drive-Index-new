@@ -1,6 +1,6 @@
 	// add multiple serviceaccounts as {}, {}, {}, random account will be selected by each time app is opened.
 
-	const environment = 'development'; // This Variable Decides the environment of the app. 'production' or 'development' or 'local'
+	const environment = 'production'; // This Variable Decides the environment of the app. 'production' or 'development' or 'local'
 
 	const serviceaccounts = [{
 		"type": "service_account",
