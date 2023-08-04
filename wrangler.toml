@@ -7,35 +7,3 @@ compatibility_date = "2023-07-06"
 binding = "ENV"
 id = "31a442e25dd6448eb650331916f64534"
 preview_id = "cd438d0e1a4a4ee6915cfad327e86944"
-
-# # Durable Object binding - For more information: https://developers.cloudflare.com/workers/runtime-apis/durable-objects
-# [[durable_objects]]
-# binding = "MY_DURABLE_OBJECT"
-# class_name = "MyDurableObject"
-
-# # Bucket binding - For more information: https://developers.cloudflare.com/workers/runtime-apis/kv#bucket
-# [[buckets]]
-# binding = "MY_BUCKET"
-# name = "my-bucket"
-# bucket_id = "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
-
-# # Service binding - For more information: https://developers.cloudflare.com/workers/platform/services
-# [[routes]]
-# binding = "MY_SERVICE"
-# pattern = "/api/*"
-# script = "api.js"
-
-# # Queue binding - For more information: https://developers.cloudflare.com/workers/runtime-apis/queues
-# [[queues]]
-# binding = "MY_QUEUE"
-# name = "my-queue"
-# zone_id = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
-
-# [env.production]
-# MY_VARIABLE = "production_value"
-
-# [env.staging]
-# MY_VARIABLE = "staging_value"
-
-# [env.shared]
-# SHARED_VARIABLE = "shared_value"
