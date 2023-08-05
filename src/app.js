@@ -1,5 +1,5 @@
 // Redesigned by telegram.dog/TheFirstSpeedster at https://www.npmjs.com/package/@googledrive/index which was written by someone else, credits are given on Source Page.
-// v2.3.1
+// v2.3.3
 // Initialize the page
 function init() {
 	document.siteName = $('title').html();
@@ -1775,7 +1775,7 @@ function file_image(name, encoded_name, size, url, file_id, cookie_folder_id) {
         <div class="card-body text-center">
           <div class="${UI.file_view_alert_class}" id="file_details" role="alert">${name}<br>${size}</div>
           <div class="d-flex justify-content-center"><div class="spinner-border ${UI.loading_spinner_class} m-5" role="status" id="spinner"><span class="sr-only"></span></div></div>
-          <img src="${url}" width="100%" onload="$('#spinner').remove()">
+          <img src="${url}" id="load_image" width="100%">
         </div>
         <div class="card-body">
           <div class="input-group mb-4">
@@ -1803,8 +1803,15 @@ function file_image(name, encoded_name, size, url, file_id, cookie_folder_id) {
       </div>
     </div>
   `;
-
 	$('#content').html(content);
+	$(document).ready(function() {
+		$('#load_image').on('load', function() {
+			$('#spinner').remove();
+		}).on('error', function() {
+			$('#spinner').remove();
+			console.log('Image failed to load.');
+		});
+	});
 }
 
 // Time conversion

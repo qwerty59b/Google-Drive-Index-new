@@ -1,5 +1,5 @@
 // Software: GDI-JS
-// Version: 2.3.2
+// Version: 2.3.3
 // Author: Parveen Bhadoo
 // Website: https://gdi.js.org
 
@@ -60,7 +60,7 @@ const crypto_base_key = "a4affcad11ea4c7f696e63edaf92095e" // Example 256 bit ke
 const encrypt_iv = new Uint8Array([38,100,240,76,189,111,227,246,178,254,115,201,91,244,245,171]); // Example 128 bit IV used.
 const uiConfig = {
   "theme": "darkly", // switch between themes, default set to slate, select from https://gitlab.com/GoogleDriveIndex/Google-Drive-Index
-  "version": "2.3.2", // don't touch this one. get latest code using generator at https://bdi-generator.hashhackers.com
+  "version": "2.3.3", // don't touch this one. get latest code using generator at https://bdi-generator.hashhackers.com
   // If you're using Image then set to true, If you want text then set it to false
   "logo_image": true, // true if you're using image link in next option.
   "logo_height": "", // only if logo_image is true
