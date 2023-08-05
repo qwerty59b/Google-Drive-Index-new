@@ -1124,6 +1124,7 @@ async function fallback(id, type) {
 				return response.json();
 			})
 			.then(function(obj) {
+				console.log(obj);
 				var mimeType = obj.mimeType;
 				var fileExtension = obj.fileExtension
 				const code = ["php", "css", "go", "java", "js", "json", "txt", "sh", "md", "html", "xml", "py", "rb", "c", "cpp", "h", "hpp"];
@@ -1149,7 +1150,7 @@ async function fallback(id, type) {
 					} else if (mimeType.includes("pdf") || pdf.includes(fileExtension)) {
 						file_pdf(name, encoded_name, size, url, file_id, cookie_folder_id);
 					} else if (code.includes(fileExtension)) {
-						file_code(name, encoded_name, size, obj.size, url, fileExtension, file_id, cookie_folder_id);
+						file_code(name, encoded_name, size, url, file_id, cookie_folder_id);
 					} else {
 						file_others(name, encoded_name, size, url, file_id, cookie_folder_id);
 					}
@@ -1181,7 +1182,6 @@ async function fallback(id, type) {
 async function file(path) {
 	var cookie_folder_id = await getCookie("root_id") || '';
 	var name = path.split('/').pop();
-	var ext = name.split('.').pop().toLowerCase().replace(`?a=view`, "");
 	$('#content').html(`<div class="d-flex justify-content-center" style="height: 150px"><div class="spinner-border ${UI.loading_spinner_class} m-5" role="status" id="spinner"><span class="sr-only"></span></div></div>`);
 	fetch("", {
 			method: "POST",
@@ -1199,6 +1199,7 @@ async function file(path) {
 			return response.json();
 		})
 		.then(function(obj) {
+			console.log(obj);
 			var mimeType = obj.mimeType;
 			var fileExtension = obj.fileExtension
 			const code = ["php", "css", "go", "java", "js", "json", "txt", "sh", "md", "html", "xml", "py", "rb", "c", "cpp", "h", "hpp"];
@@ -1224,7 +1225,7 @@ async function file(path) {
 				} else if (mimeType.includes("pdf") || pdf.includes(fileExtension)) {
 					file_pdf(name, encoded_name, size, url, file_id, cookie_folder_id);
 				} else if (code.includes(fileExtension)) {
-					file_code(name, encoded_name, size, obj.size, url, fileExtension, file_id, cookie_folder_id);
+					file_code(name, encoded_name, size, url, file_id, cookie_folder_id);
 				} else {
 					file_others(name, encoded_name, size, url, file_id, cookie_folder_id);
 				}
@@ -1315,7 +1316,7 @@ function file_others(name, encoded_name, size, url, file_id, cookie_folder_id) {
                   <a class="dropdown-item" href="intent:${url}#Intent;component=idm.internet.download.manager.plus/idm.internet.download.manager.Downloader;S.title=${encoded_name};end">1DM+ (Plus)</a>
                 </div>
             </div>
-            ` + copyButton + copyFileBox`
+            ` + copyButton + copyFileBox+`
             </div>
             <br></div>`;
 	$("#content").html(content);
