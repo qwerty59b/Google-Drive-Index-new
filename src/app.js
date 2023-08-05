@@ -1,5 +1,5 @@
 // Redesigned by telegram.dog/TheFirstSpeedster at https://www.npmjs.com/package/@googledrive/index which was written by someone else, credits are given on Source Page.
-// v2.3.3
+// v2.3.4
 // Initialize the page
 function init() {
 	document.siteName = $('title').html();
@@ -1804,14 +1804,7 @@ function file_image(name, encoded_name, size, url, file_id, cookie_folder_id) {
     </div>
   `;
 	$('#content').html(content);
-	$(document).ready(function() {
-		$('#load_image').on('load', function() {
-			$('#spinner').remove();
-		}).on('error', function() {
-			$('#spinner').remove();
-			console.log('Image failed to load.');
-		});
-	});
+	$('#spinner').remove();
 }
 
 // Time conversion
