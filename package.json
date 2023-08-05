@@ -1,6 +1,6 @@
 {
   "name": "@googledrive/index",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "private": false,
   "scripts": {
     "deploy": "wrangler publish",
