@@ -1629,11 +1629,11 @@ async function findId2Path(gd, url) {
     if (!path) {
       return new Response("Invalid URL");
     } else if (url.searchParams.get('view') && url.searchParams.get('view') == 'true') {
-      return new Response("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '');
-      //return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '', 302);
+      //return new Response("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '');
+      return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '', 302);
     } else {
-      return new Response("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '');
-      //return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path || '', 302);
+      //return new Response("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '');
+      return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path || '', 302);
     }
   } catch (error) {
     return new Response("Invalid ID or Path Not Found");
