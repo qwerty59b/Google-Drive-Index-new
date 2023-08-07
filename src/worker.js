@@ -1623,21 +1623,22 @@ async function handleId2Path(request, gd) {
 }
 
 async function findId2Path(gd, url) {
-  try {
-    let [path, prefix] = await gd.findPathById(url.searchParams.get('id'));
-    console.log(path, prefix)
-    if (!path) {
-      return new Response("Invalid URL");
-    } else if (url.searchParams.get('view') && url.searchParams.get('view') == 'true') {
-      //return new Response("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '');
-      return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '', 302);
-    } else {
-      //return new Response("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '');
-      return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path || '', 302);
-    }
-  } catch (error) {
-    return new Response("Invalid ID or Path Not Found");
-  }
+	try {
+		let [path, prefix] = await gd.findPathById(url.searchParams.get('id'));
+		console.log(path, prefix)
+		if (!path) {
+			return new Response("Invalid URL");
+		} else if (url.searchParams.get('view') && url.searchParams.get('view') == 'true') {
+			//return new Response("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '');
+			return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '', 302);
+		} else {
+			//return new Response("https://" + url.hostname + "/" + prefix + ":" + path + "?a=view" || '');
+			return Response.redirect("https://" + url.hostname + "/" + prefix + ":" + path || '', 302);
+		}
+	} catch (error) {
+		const encrypted_id = await encryptString(url.searchParams.get('id'), encrypt_iv)
+		return Response.redirect("https://" + url.hostname + "/fallback?id=" + encrypted_id || '', 302);
+	}
 }
 
 /*async function findItemById(gd, id) {
