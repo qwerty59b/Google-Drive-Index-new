@@ -2178,5 +2178,8 @@ function decodeJwtToken(token) {
 }
 
 addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request, event));
+  event.respondWith(handleRequest(event.request, event).catch(
+    (err) => new Response("Report this page when asked at the time of support... ==> " + err.stack, { status: 500 })
+  )
+  );
 });
