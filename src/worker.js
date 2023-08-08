@@ -18,17 +18,17 @@ const authConfig = {
   "client_id": "", // Client id from Google Cloud Console
   "client_secret": "", // Client Secret from Google Cloud Console
   "refresh_token": "", // Authorize token
-  "service_account": true, // true if you're using Service Account instead of user account
+  "service_account": false, // true if you're using Service Account instead of user account
   "service_account_json": randomserviceaccount, // don't touch this one
   "files_list_page_size": 100,
   "search_result_list_page_size": 100,
   "enable_cors_file_down": false,
-  "enable_password_file_verify": true, // support for .password file
+  "enable_password_file_verify": false, // support for .password file not working right now
   "direct_link_protection": false, // protects direct links with Display UI
   "disable_anonymous_download": false, // disables direct links without session
   "file_link_expiry": 7, // expire file link in set number of days
   "search_all_drives": true, // search all of your drives instead of current drive if set to true
-  "enable_login": true, // set to true if you want to add login system
+  "enable_login": false, // set to true if you want to add login system
   "enable_signup": false, // set to true if you want to add signup system
   "enable_social_login": true, // set to true if you want to add social login system
   "google_client_id_for_login": "", // Google Client ID for Login
@@ -36,9 +36,9 @@ const authConfig = {
   "redirect_domain": "", // Domain for login redirect eg. https://example.com
   "login_database": "Local", // KV or Local
   "login_days": 7, // days to keep logged in
-  "enable_ip_lock": true, // set to true if you want to lock user downloads to user IP
-  "single_session": true, // set to true if you want to allow only one session per user
-  "ip_changed_action": true, // set to true if you want to logout user if IP changed
+  "enable_ip_lock": false, // set to true if you want to lock user downloads to user IP
+  "single_session": false, // set to true if you want to allow only one session per user
+  "ip_changed_action": false, // set to true if you want to logout user if IP changed
   "users_list": [{
       "username": "admin",
       "password": "admin",
