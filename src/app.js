@@ -490,7 +490,7 @@ function list(path, id = '', fallback = false) {
 		});
 
 		// Join the selected items' data with a newline character
-		const dataToCopy = selectedItemsData.join(",\n");
+		const dataToCopy = selectedItemsData.join("\n");
 
 		// Create a temporary input element
 		const tempInput = document.createElement("textarea");
