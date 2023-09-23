@@ -233,9 +233,9 @@ function requestListPath(path, params, resultCallback, authErrorCallback, retrie
 				return response.json();
 			})
 			.then(function(res) {
-				if (res && res.error && res.error.code === '401') {
+				if (res && res.error && res.error.code === 401) {
 					// Password verification failed
-					if (authErrorCallback) authErrorCallback(path);
+					askPassword(path);
 				} else if (res && res.data === null) {
 					document.getElementById('spinner').remove();
 					document.getElementById('list').innerHTML = `<div class='alert alert-danger' role='alert'> Server didn't send any data.</div></div></div>`;
@@ -456,33 +456,14 @@ function list(path, id = '', fallback = false) {
 				password: password
 			},
 			handleSuccessResult,
-			function(path) {
-				$('#spinner').remove();
-				var passwordInput = prompt("Directory encryption, please enter the password", "");
-				localStorage.setItem('password' + path, passwordInput);
-
-				if (passwordInput != null && passwordInput != "") {
-					list(path);
-				} else {
-					history.go(-1);
-				}
-			}, null, fallback = true);
+			null, null, fallback = true);
 	} else {
+		console.log("handling this")
 		requestListPath(path, {
 				password: password
 			},
 			handleSuccessResult,
-			function(path) {
-				$('#spinner').remove();
-				var passwordInput = prompt("Directory encryption, please enter the password", "");
-				localStorage.setItem('password' + path, passwordInput);
-
-				if (passwordInput != null && passwordInput != "") {
-					list(path);
-				} else {
-					history.go(-1);
-				}
-			});
+			null);
 	}
 
 
@@ -530,6 +511,18 @@ function list(path, id = '', fallback = false) {
 		// Alert the user that the data has been copied
 		alert("Selected items copied to clipboard!");
 	});
+}
+
+function askPassword(path) {
+	$('#spinner').remove();
+	var passwordInput = prompt("Directory encryption, please enter the password", "");
+	localStorage.setItem('password' + path, passwordInput);
+
+	if (passwordInput != null && passwordInput != "") {
+		list(path);
+	} else {
+		history.go(-1);
+	}
 }
 
 /**
